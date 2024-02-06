@@ -25,7 +25,7 @@ SECRET_KEY = 'xiw1mpulhq1r&-075ln*)j^(9)roiiz^*%3vrt6by@1@+^_$ce'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'marketplace',
+    'rest_framework',
+    'rest_framework_swagger',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
@@ -66,6 +70,15 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_VERSION': 'v1',
+    'ALLOWED_VERSIONS': ['v1'],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
 
 WSGI_APPLICATION = 'backend_sipemas.wsgi.application'
 
