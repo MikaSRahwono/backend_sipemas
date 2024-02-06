@@ -70,3 +70,11 @@ class TopicInformationView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         instance = self.get_object()
         detailSerializer = TopicInformationSerializer(instance)
         return render(request, 'marketplace/topic_detail.html', {'html': detailSerializer.data.get('html')})
+    
+class CourseInformationView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = CourseInformationSerializer()
+    queryset = CourseInformation.objects.all()
+    def retrieve(self,request, *args, **kwargs):
+        instance = self.get_object()
+        detailSerializer = CourseInformationSerializer(instance)
+        return render(request, 'marketplace/topic_detail.html', {'html': detailSerializer.data.get('html')})

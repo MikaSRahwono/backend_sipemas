@@ -6,7 +6,20 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+class PrerequisiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prerequisite
+        fields = '__all__'
+
+class CourseInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseInformation
+        fields = '__all__'
+
 class CourseSerializer(serializers.ModelSerializer):
+    prerequisites = PrerequisiteSerializer(many=True)
+    course_information = CourseInformationSerializer()
+    
     class Meta:
         model = Course
         fields = '__all__'

@@ -37,6 +37,13 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+class CourseInformation(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    html = RichTextField()
+
+    def __str__(self):
+        return self.html
+
 class Field(models.Model):
     name = models.CharField(max_length=256)
     code = models.CharField(max_length=2)
