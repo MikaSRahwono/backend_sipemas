@@ -8,9 +8,10 @@ app_name = 'marketplace'
 
 router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='course')
+router.register(r'topics', TopicViewSet, basename='topics')
 
-topic_router = routers.NestedSimpleRouter(router, r'courses', lookup='course')
-topic_router.register(r'topics', TopicViewSet, basename='topics')
+topic_router = routers.NestedSimpleRouter(router, r'topics', lookup='topics')
+topic_router.register(r'topic-information', TopicInformationView, basename='topic_information')
 
 urlpatterns = [
     path(r'', include(router.urls)),

@@ -1,6 +1,11 @@
 from rest_framework import serializers
 from .models import *
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
@@ -11,16 +16,28 @@ class FieldSerializer(serializers.ModelSerializer):
         model = Field
         fields = '__all__'
 
-class TopicSerializer(serializers.ModelSerializer):
+class TopicInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TopicInformation
+        fields = '__all__'
+
+class TopicListSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
-    
+    fields = FieldSerializer(many=True)
+    supervisors = UserSerializer(many=True)
+
     class Meta:
         model = Topic
         fields = '__all__'
 
-class TopicInformationSerializer(serializers.ModelSerializer):
+class TopicDetailSerializer(serializers.ModelSerializer):
+    course = CourseSerializer(read_only=True)
+    fields = FieldSerializer(many=True)
+    supervisors = UserSerializer(many=True)
+    topic_information = TopicInformationSerializer(read_only=True)
+    
     class Meta:
-        model = TopicInformation
+        model = Topic
         fields = '__all__'
 
 class PrerequisiteSerializer(serializers.ModelSerializer):

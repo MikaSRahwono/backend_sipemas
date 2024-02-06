@@ -27,7 +27,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     model = Course
     queryset = Course.objects.all()
 
-    def retrieve(self,request, *args, **kwargs):
+    def retrieve(self, serializer):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
@@ -39,18 +39,34 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 class TopicViewSet(viewsets.ModelViewSet):
+    serializer_class = TopicListSerializer
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return TopicListSerializer
+        elif self.action in ['retrieve', 'update', 'partial_update']:
+            return TopicDetailSerializer
+        else:
+            return super().get_serializer_class()
+        
     authentication_classes = []
-    serializer_class = TopicSerializer
     model = Topic
     queryset = Topic.objects.all()
 
     def retrieve(self,request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        detailSerializer = TopicDetailSerializer(instance)
+        return Response(detailSerializer.data)
     
     def perform_create(self, serializer):
         serializer.save()
 
     def perform_update(self, serializer):
         serializer.save()
+
+class TopicInformationView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = TopicInformationSerializer()
+    queryset = TopicInformation.objects.all()
+    def retrieve(self,request, *args, **kwargs):
+        instance = self.get_object()
+        detailSerializer = TopicInformationSerializer(instance)
+        return render(request, 'marketplace/topic_detail.html', {'html': detailSerializer.data.get('html')})
