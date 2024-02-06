@@ -17,9 +17,9 @@ class CourseInformationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CourseSerializer(serializers.ModelSerializer):
-    prerequisites = PrerequisiteSerializer(many=True)
-    course_information = CourseInformationSerializer()
-    
+    prerequisites = PrerequisiteSerializer(many=True, read_only=True)
+    course_information = CourseInformationSerializer(read_only=True)
+
     class Meta:
         model = Course
         fields = '__all__'

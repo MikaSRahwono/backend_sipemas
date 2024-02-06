@@ -14,11 +14,16 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import *
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 
 from rest_framework import viewsets
+from rest_framework.filters import SearchFilter, OrderingFilter
+
+import django_filters
 
 from .models import *
 from .serializers import *
+from .filters import *
 
 # Create your views here.
 class CourseViewSet(viewsets.ModelViewSet):
@@ -38,8 +43,10 @@ class CourseViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
+class TopicPagination(PageNumberPagination):
+    page_size = 10
+
 class TopicViewSet(viewsets.ModelViewSet):
-    serializer_class = TopicListSerializer
     def get_serializer_class(self):
         if self.action == 'list':
             return TopicListSerializer
@@ -47,10 +54,15 @@ class TopicViewSet(viewsets.ModelViewSet):
             return TopicDetailSerializer
         else:
             return super().get_serializer_class()
-        
+    
+    serializer_class = TopicListSerializer
+    pagination_class = TopicPagination
     authentication_classes = []
     model = Topic
     queryset = Topic.objects.all()
+    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = TopicFilter
+    ordering_fields = ['title', 'created_on'] 
 
     def retrieve(self,request, *args, **kwargs):
         instance = self.get_object()
