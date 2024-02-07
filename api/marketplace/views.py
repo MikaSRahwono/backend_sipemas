@@ -26,6 +26,10 @@ from .serializers import *
 from .filters import *
 
 # Create your views here.
+
+class TopicPagination(PageNumberPagination):
+    page_size = 10
+
 class CourseViewSet(viewsets.ModelViewSet):
     authentication_classes = []
     serializer_class = CourseSerializer
@@ -42,9 +46,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
-
-class TopicPagination(PageNumberPagination):
-    page_size = 10
 
 class TopicViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
@@ -90,3 +91,29 @@ class CourseInformationView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
         instance = self.get_object()
         detailSerializer = CourseInformationSerializer(instance)
         return render(request, 'marketplace/topic_detail.html', {'html': detailSerializer.data.get('html')})
+    
+class ApplicationViewSet(viewsets.ModelViewSet):
+    authentication_classes = []
+    serializer_class = ApplicationSerializer
+    model = Application
+    queryset = Application.objects.all()
+    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = ApplicationFilter
+    ordering_fields = ['created_on']
+
+    def get_queryset(self):
+        topics_id = self.kwargs.get('topics_pk')
+        if topics_id:
+            return Application.objects.filter(topic__id=topics_id)
+        return super().get_queryset()
+
+    def retrieve(self, serializer):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()

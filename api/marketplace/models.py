@@ -89,3 +89,22 @@ class Prerequisite(models.Model):
 
     def __str__(self):
         return self.type
+
+class Application(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    praproposal = models.CharField(max_length=256)
+    is_approved = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+class ApplicationApproval(models.Model):
+    application = models.ForeignKey(Application, on_delete=models.CASCADE)
+    approvee = models.ManyToManyField(User)
+    is_approved = models.BooleanField(default=False)
+    is_supervisor = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    deleted_on = models.DateTimeField(blank=True, auto_now=False, null=True)
+    
+

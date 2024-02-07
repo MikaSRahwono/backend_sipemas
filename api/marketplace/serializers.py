@@ -14,7 +14,7 @@ class PrerequisiteSerializer(serializers.ModelSerializer):
 class CourseInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseInformation
-        fields = '__all__'
+        fields = ['id']
 
 class CourseSerializer(serializers.ModelSerializer):
     prerequisites = PrerequisiteSerializer(many=True, read_only=True)
@@ -32,7 +32,7 @@ class FieldSerializer(serializers.ModelSerializer):
 class TopicInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicInformation
-        fields = '__all__'
+        fields = ['id']
 
 class TopicListSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
@@ -56,4 +56,15 @@ class TopicDetailSerializer(serializers.ModelSerializer):
 class PrerequisiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prerequisite
+        fields = '__all__'
+
+class ApplicationApprovalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplicationApproval
+        fields = '__all__'
+
+class ApplicationSerializer(serializers.ModelSerializer):
+    application_approval = ApplicationApprovalSerializer(many=True, read_only=True)
+    class Meta:
+        model = Application
         fields = '__all__'
