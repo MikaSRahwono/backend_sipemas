@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  sipemas-db:
+    restart: always
+    container_name: sipemas-db
+    image: postgres:11
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_LOCAL_PORT}:${POSTGRES_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  sipemas-backend:
+    container_name: sipemas-backend
+    build:
+      context: .
+      dockerfile: DockerFile
+    entrypoint: /entrypoint.sh
+    command: bash -c "python manage.py runserver 0.0.0.0:${DJANGO_PORT}"
+    ports:
+      - "${DJANGO_PORT}:${DJANGO_PORT}"
+    volumes:
+      - .:/backend_sipemas
+    depends_on:
+      web_app_db:
+        condition: service_healthy
+    restart: on-failure
