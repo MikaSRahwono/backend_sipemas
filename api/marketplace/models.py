@@ -26,9 +26,8 @@ class Course(models.Model):
     course_type = models.CharField(
         max_length=2,
         choices=CourseType.choices,
-        default=CourseType.ONETOONE,
     )
-    is_allowed_new_topic = models.BooleanField(default=True)
+    is_allowed_new_topic = models.BooleanField()
     topic_count = models.IntegerField(default=0)
 
     class Meta:
@@ -56,7 +55,7 @@ class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=256)
     is_open = models.BooleanField(default=True)
-    num_of_people = models.IntegerField(default=1)
+    num_of_people = models.IntegerField()
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     fields = models.ManyToManyField(Field)

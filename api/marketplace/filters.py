@@ -8,6 +8,7 @@ class TopicFilter(django_filters.FilterSet):
     class Meta:
         model = Topic
         fields = {
+            'course_id': ['exact'],
             'title': ['exact'],
             'num_of_people': ['exact'],
             'is_open': ['exact'],

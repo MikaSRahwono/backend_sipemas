@@ -15,10 +15,10 @@ from rest_framework import status
 from rest_framework.generics import *
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
-
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 
 from .signals import application_creation_done
 
@@ -67,12 +67,32 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         elif request.method == 'PUT':
-            serializer = CourseInformationSerializer(course_information, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                course_information = CourseInformation.objects.get(course=course)
+                serializer = CourseInformationSerializer(course_information, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except CourseInformation.DoesNotExist:
+                return Response({"error": "Course information not found"}, status=status.HTTP_404_NOT_FOUND)
 
+class FieldViewSet(viewsets.ModelViewSet):
+    authentication_classes = []
+    serializer_class = FieldSerializer
+    model = Field
+    queryset = Field.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_update(self, serializer):
+        serializer.save()
 
 class TopicViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
@@ -92,16 +112,31 @@ class TopicViewSet(viewsets.ModelViewSet):
     filterset_class = TopicFilter
     ordering_fields = ['title', 'created_on'] 
 
-    def retrieve(self, serializer):
-        instance = self.get_object()
-        detailSerializer = TopicDetailSerializer(instance)
-        return Response(detailSerializer.data)
-    
-    def perform_create(self, serializer):
-        serializer.save()
+    def get_object(self, pk):
+        try:
+            return Topic.objects.get(pk = pk)
+        except:
+            raise ValidationError({'msg':'Topic Does not exist'})
 
-    def perform_update(self, serializer):
-        serializer.save()
+    def retrieve(self, request, pk):
+        topic = self.get_object(pk)
+        serializer = TopicDetailSerializer(topic)
+        return Response(serializer.data)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = TopicListSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+
+    def update(self, request, pk):
+        topic = self.get_object(pk = pk)
+        serializer = TopicListSerializer(topic, data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
 
     @action(detail=True, methods=['GET', 'POST', 'PUT'])
     def information(self, request, pk=None):
