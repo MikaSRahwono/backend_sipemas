@@ -14,16 +14,14 @@ class PrerequisiteSerializer(serializers.ModelSerializer):
 class CourseInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseInformation
-        fields = ['id']
+        fields = ['html']
 
 class CourseSerializer(serializers.ModelSerializer):
     prerequisites = PrerequisiteSerializer(many=True, read_only=True)
-    course_information = CourseInformationSerializer(read_only=True)
-
     class Meta:
         model = Course
         fields = '__all__'
-
+    
 class FieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = Field
@@ -32,12 +30,12 @@ class FieldSerializer(serializers.ModelSerializer):
 class TopicInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicInformation
-        fields = ['id']
+        fields = ['html']
 
 class TopicListSerializer(serializers.ModelSerializer):
-    course = CourseSerializer(read_only=True)
-    fields = FieldSerializer(many=True)
-    supervisors = UserSerializer(many=True)
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
+    fields = FieldSerializer(many=True, read_only=True)
+    supervisors = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Topic

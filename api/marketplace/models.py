@@ -38,7 +38,7 @@ class Course(models.Model):
         return self.title
 
 class CourseInformation(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.OneToOneField(Course, on_delete=models.CASCADE)
     html = RichTextField()
 
     def __str__(self):

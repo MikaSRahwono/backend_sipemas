@@ -18,6 +18,9 @@ from rest_framework.pagination import PageNumberPagination
 
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.decorators import action
+
+from .signals import application_creation_done
 
 import django_filters
 
@@ -25,7 +28,6 @@ from .models import *
 from .serializers import *
 from .filters import *
 
-# Create your views here.
 
 class TopicPagination(PageNumberPagination):
     page_size = 10
@@ -36,9 +38,10 @@ class CourseViewSet(viewsets.ModelViewSet):
     model = Course
     queryset = Course.objects.all()
 
-    def retrieve(self, serializer):
+    def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
+        serializer
         return Response(serializer.data)
     
     def perform_create(self, serializer):
@@ -46,6 +49,30 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
+    
+    @action(detail=True, methods=['GET', 'POST', 'PUT'])
+    def information(self, request, pk=None):
+        course = self.get_object()
+
+        if request.method == 'GET':
+            course_information = CourseInformation.objects.get(course=course)
+            return render(request, "marketplace/topic_detail.html", {"html": course_information.__str__})
+
+        
+        elif request.method == 'POST':
+            serializer = CourseInformationSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(course=course)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif request.method == 'PUT':
+            serializer = CourseInformationSerializer(course_information, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TopicViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
@@ -65,7 +92,7 @@ class TopicViewSet(viewsets.ModelViewSet):
     filterset_class = TopicFilter
     ordering_fields = ['title', 'created_on'] 
 
-    def retrieve(self,request, *args, **kwargs):
+    def retrieve(self, serializer):
         instance = self.get_object()
         detailSerializer = TopicDetailSerializer(instance)
         return Response(detailSerializer.data)
@@ -76,22 +103,28 @@ class TopicViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
-class TopicInformationView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    serializer_class = TopicInformationSerializer()
-    queryset = TopicInformation.objects.all()
-    def retrieve(self,request, *args, **kwargs):
-        instance = self.get_object()
-        detailSerializer = TopicInformationSerializer(instance)
-        return render(request, 'marketplace/topic_detail.html', {'html': detailSerializer.data.get('html')})
-    
-class CourseInformationView(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    serializer_class = CourseInformationSerializer()
-    queryset = CourseInformation.objects.all()
-    def retrieve(self,request, *args, **kwargs):
-        instance = self.get_object()
-        detailSerializer = CourseInformationSerializer(instance)
-        return render(request, 'marketplace/topic_detail.html', {'html': detailSerializer.data.get('html')})
-    
+    @action(detail=True, methods=['GET', 'POST', 'PUT'])
+    def information(self, request, pk=None):
+        topic = self.get_object()
+
+        if request.method == 'GET':
+            topic_information = TopicInformation.objects.get(topic=topic)
+            return render(request, "marketplace/topic_detail.html", {"html": topic_information.__str__})
+        
+        elif request.method == 'POST':
+            serializer = TopicInformationSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(topic=topic)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif request.method == 'PUT':
+            serializer = TopicInformationSerializer(topic_information, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class ApplicationViewSet(viewsets.ModelViewSet):
     authentication_classes = []
     serializer_class = ApplicationSerializer
@@ -112,8 +145,18 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
-    def perform_create(self, serializer):
+    def perform_create(self, request, *args, **kwargs):
+        application_data = request.data.copy()
+        users_data = application_data.pop('users', [])
+
+        serializer = self.get_serializer(data=application_data)
+        serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        application = Application.objects.filter(topic__id=application_data.pop('id'))
+
+        application_creation_done.send(sender=Application, users_data_list=users_data, application=application)
+
 
     def perform_update(self, serializer):
         serializer.save()
