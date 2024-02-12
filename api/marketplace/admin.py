@@ -8,7 +8,6 @@ admin.register(
     Topic,
     Field,
     TopicInformation,
-    User,
     CourseInformation,
     Prerequisite,
     Application,

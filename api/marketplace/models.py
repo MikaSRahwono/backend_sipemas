@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
 
-class User(models.Model):
+class UserDetail(models.Model):
     class UserType(models.TextChoices):
         LECTURER = 'LEC', _('Dosen')
         STUDENT = 'STU', _('Mahasiswa')
@@ -16,6 +16,31 @@ class User(models.Model):
         default=UserType.STUDENT,
     )
     is_external = models.BooleanField(default=False)
+
+class Field(models.Model):
+    name = models.CharField(max_length=256)
+    code = models.CharField(max_length=2)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(UserDetail, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
+    major = models.CharField(max_length=256)
+    about = models.TextField(blank=True)
+    profile_image = models.CharField(max_length=256, blank=True)
+    line_id = models.CharField(max_length=256, blank=True)
+    linkedin_url = models.CharField(max_length=256, blank=True)
+    github_url = models.CharField(max_length=256, blank=True)
+    is_open = models.BooleanField(default=True)
+    fields = models.ManyToManyField(Field, related_name='field_of_interest')
+
+class Experience(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
+    description = models.TextField(blank=True)
 
 class Course(models.Model):
     class CourseType(models.TextChoices):
@@ -43,14 +68,6 @@ class CourseInformation(models.Model):
     def __str__(self):
         return self.html
 
-class Field(models.Model):
-    name = models.CharField(max_length=256)
-    code = models.CharField(max_length=2)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
-
 class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=256)
@@ -59,7 +76,7 @@ class Topic(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     fields = models.ManyToManyField(Field)
-    supervisors = models.ManyToManyField(User)
+    supervisors = models.ManyToManyField(UserDetail)
 
     def __str__(self):
         return self.title
@@ -98,7 +115,7 @@ class Application(models.Model):
 
 class ApplicationApproval(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
-    approvee = models.ManyToManyField(User)
+    approvee = models.ManyToManyField(UserDetail)
     is_approved = models.BooleanField(default=False)
     is_supervisor = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)

@@ -3,7 +3,7 @@ from .models import *
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = UserDetail
         fields = '__all__'
 
 class PrerequisiteSerializer(serializers.ModelSerializer):
