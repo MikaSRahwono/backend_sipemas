@@ -1,21 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
-
-class UserDetail(models.Model):
-    class UserType(models.TextChoices):
-        LECTURER = 'LEC', _('Dosen')
-        STUDENT = 'STU', _('Mahasiswa')
-
-    username = models.CharField(max_length=256)
-    email = models.CharField(max_length=256)
-    kode_identitas = models.CharField(max_length=256)
-    role = models.CharField(
-        max_length=3,
-        choices=UserType.choices,
-        default=UserType.STUDENT,
-    )
-    is_external = models.BooleanField(default=False)
+from django.contrib.auth.models import User
 
 class Field(models.Model):
     name = models.CharField(max_length=256)
@@ -24,23 +10,6 @@ class Field(models.Model):
 
     def __str__(self):
         return self.name
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(UserDetail, on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
-    major = models.CharField(max_length=256)
-    about = models.TextField(blank=True)
-    profile_image = models.CharField(max_length=256, blank=True)
-    line_id = models.CharField(max_length=256, blank=True)
-    linkedin_url = models.CharField(max_length=256, blank=True)
-    github_url = models.CharField(max_length=256, blank=True)
-    is_open = models.BooleanField(default=True)
-    fields = models.ManyToManyField(Field, related_name='field_of_interest')
-
-class Experience(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
 
 class Course(models.Model):
     class CourseType(models.TextChoices):
@@ -76,7 +45,7 @@ class Topic(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     fields = models.ManyToManyField(Field)
-    supervisors = models.ManyToManyField(UserDetail)
+    supervisors = models.ManyToManyField(User)
 
     def __str__(self):
         return self.title
@@ -115,7 +84,7 @@ class Application(models.Model):
 
 class ApplicationApproval(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
-    approvee = models.ManyToManyField(UserDetail)
+    approvee = models.ManyToManyField(User)
     is_approved = models.BooleanField(default=False)
     is_supervisor = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)

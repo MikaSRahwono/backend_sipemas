@@ -1,14 +1,4 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.conf import settings
-from django.core.mail import send_mail
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from django.template.loader import render_to_string
-from django.core.mail import EmailMessage
-from django.core.mail import EmailMultiAlternatives
-
-from django.shortcuts import render
 
 from rest_framework.response import Response
 from rest_framework import status
