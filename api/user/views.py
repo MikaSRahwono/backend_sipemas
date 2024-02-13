@@ -88,6 +88,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         elif request.method == 'PUT':
+            user_profile = UserProfile.objects.get(user=user)
             serializer = UserProfileSerializer(user_profile, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -111,6 +112,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         elif request.method == 'PUT':
+            user_detail = UserDetail.objects.get(user=user)
             serializer = UserDetailSerializer(user_detail, data=request.data)
             if serializer.is_valid():
                 serializer.save()
