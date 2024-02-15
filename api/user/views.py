@@ -119,3 +119,20 @@ class UsersViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+    @action(detail=True, methods=['PATCH'], url_path='change_availability')
+    def change_availability(self, request, pk=None):
+        user = self.get_object(pk=pk)
+        user_profile = UserProfile.objects.get(user=user)
+        user_profile.is_open = not user_profile.is_open
+        user_profile.save()
+        return Response({'message': 'Availability changed successfully.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['PATCH', 'PUT'], url_path='update_picture')
+    def update_picture(self, request, pk=None):
+        user = self.get_object(pk=pk)
+        user_profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+
+from api.user.storage import ImageStorage
 from ..marketplace.models import Field
 from django.utils.translation import gettext_lazy as _
 
@@ -23,7 +25,7 @@ class UserProfile(models.Model):
     name = models.CharField(max_length=256)
     major = models.CharField(max_length=256)
     about = models.TextField(blank=True)
-    profile_image = models.CharField(max_length=256, blank=True)
+    profile_image = models.ImageField(upload_to='profile_imgs/', null=True, blank=True, storage=ImageStorage())
     line_id = models.CharField(max_length=256, blank=True)
     linkedin_url = models.CharField(max_length=256, blank=True)
     github_url = models.CharField(max_length=256, blank=True)
