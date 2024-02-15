@@ -47,7 +47,6 @@ class TopicListSerializer(serializers.ModelSerializer):
         
         for supervisor in supervisors:
             supervisorsInstances.append(User.objects.get(id = supervisor['id']))
-        topic = Topic.objects.create(**validated_data)
         topic.supervisors.set(supervisorsInstances)
 
         return topic
