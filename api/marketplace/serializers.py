@@ -93,7 +93,6 @@ class ApplicationApprovalSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ApplicationSerializer(serializers.ModelSerializer):
-    application_approval = ApplicationApprovalSerializer(many=True, read_only=True)
     class Meta:
         model = Application
-        fields = '__all__'
+        fields = ['praproposal', 'is_approved', 'created_on', 'updated_on']

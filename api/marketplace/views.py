@@ -149,7 +149,17 @@ class TopicViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        
+    @action(detail=True, methods=['POST'], url_path='apply')
+    def apply(self, request, pk=None):
+        topic = self.get_object(pk=pk)
+        
+        serializer = ApplicationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(topic = topic)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class ApplicationViewSet(viewsets.ModelViewSet):
     authentication_classes = []
     serializer_class = ApplicationSerializer
