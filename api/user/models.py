@@ -12,7 +12,9 @@ class UserDetail(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_detail')
     email = models.CharField(max_length=256)
-    kode_identitas = models.CharField(max_length=256)
+    faculty = models.CharField(max_length=256, blank=True)
+    study_program = models.CharField(max_length=256, blank=True)
+    educational_program = models.CharField(max_length=256, blank=True)
     role = models.CharField(
         max_length=3,
         choices=UserType.choices,

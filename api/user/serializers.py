@@ -42,7 +42,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDetail
-        fields = ['email', 'kode_identitas', 'role', 'is_external']
+        fields = ['email', 'faculty', 'study_program', 'educational_program', 'role', 'is_external']
 
 class UserSerializer(serializers.ModelSerializer):
     user_detail = UserDetailSerializer(read_only=True)
