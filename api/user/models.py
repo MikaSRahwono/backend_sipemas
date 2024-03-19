@@ -5,22 +5,26 @@ from api.user.storage import ImageStorage
 from ..marketplace.models import Field
 from django.utils.translation import gettext_lazy as _
 
+class Organization(models.Model):
+    faculty = models.CharField(max_length=256, blank=True)
+    study_program = models.CharField(max_length=256, blank=True)
+    educational_program = models.CharField(max_length=256, blank=True)
+
 class UserDetail(models.Model):
     class UserType(models.TextChoices):
+        STAFF = 'STA', _('Staf')
         LECTURER = 'LEC', _('Dosen')
         STUDENT = 'STU', _('Mahasiswa')
 
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_detail')
     email = models.CharField(max_length=256)
-    faculty = models.CharField(max_length=256, blank=True)
-    study_program = models.CharField(max_length=256, blank=True)
-    educational_program = models.CharField(max_length=256, blank=True)
     role = models.CharField(
         max_length=3,
         choices=UserType.choices,
         default=UserType.STUDENT,
     )
     is_external = models.BooleanField(default=False)
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE,  related_name='user_detail')
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_profile')
@@ -38,3 +42,4 @@ class Experience(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     description = models.TextField(blank=True)
+
