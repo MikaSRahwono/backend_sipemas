@@ -1,3 +1,4 @@
+from api.user.models import Organization
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib import messages
@@ -37,13 +38,10 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             user = User.objects.create_user(username=username, password=password, email=email)
             if sso_data['nama_role'] == 'mahasiswa':
                 prodi  = sso_data['kode_org'].split(":")[0]
-                faculty_info = get_faculty_info(prodi)
-
+                organization_class = Organization.objects.get(id = prodi)
+                
                 user_detail = {
                     'email': email,
-                    'faculty': faculty_info['faculty'],
-                    'study_program': faculty_info['study_program'],
-                    'educational_program': faculty_info['educational_program'],
                     'role' : 'STU',
                     'is_external': False
                 }
@@ -51,7 +49,7 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 serializer = UserDetailSerializer(data=user_detail)
 
                 if serializer.is_valid():
-                    serializer.save(user=user)
+                    serializer.save(user=user, organization=organization_class)
 
                     serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
                     serializer.is_valid(raise_exception=True)
@@ -98,5 +96,4 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
         elif count_users > 1:
             messages.error(request, 'Terdapat lebih dari 1 akun dengan username sama. Silakan hubungi Admin')
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        
+    

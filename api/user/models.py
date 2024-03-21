@@ -6,7 +6,15 @@ from ..marketplace.models import Field
 from django.utils.translation import gettext_lazy as _
 
 class Organization(models.Model):
-    faculty = models.CharField(max_length=256, blank=True)
+    class Faculty(models.TextChoices):
+        ILMU_KOMPUTER = 'ILMU KOMPUTER', _('Ilmu Komputer')
+
+    id = models.CharField(max_length=11, primary_key=True)
+    faculty = models.CharField(
+        max_length=256, 
+        choices=Faculty.choices, 
+        default=Faculty.ILMU_KOMPUTER,
+        blank=True)
     study_program = models.CharField(max_length=256, blank=True)
     educational_program = models.CharField(max_length=256, blank=True)
 

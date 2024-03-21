@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.fields import CurrentUserDefault
 from .models import *
 
 class FieldSerializer(serializers.ModelSerializer):
@@ -13,7 +14,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ['name', 'major', 'about', 'profile_image', 'line_id', 'linkedin_url', 'github_url', 'is_open', 'fields']
 
-    def create(self,validated_data):
+    def create(self, validated_data):
         fields = self.initial_data['fields']
         fieldsInstances = []
         
@@ -25,6 +26,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return user_profile
     
     def update(self, instance, validated_data):
+        user = self.context['request'].user
+
+        if user.pk != instance.pk:
+            raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
+        
         try: 
             fields = self.initial_data['fields']
             fieldsInstances = []
@@ -42,7 +48,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDetail
-        fields = ['email', 'faculty', 'study_program', 'educational_program', 'role', 'is_external']
+        fields = ['email', 'role', 'is_external']
 
 class UserSerializer(serializers.ModelSerializer):
     user_detail = UserDetailSerializer(read_only=True)

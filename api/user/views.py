@@ -9,8 +9,12 @@ from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated
 
+from django.db import IntegrityError
 import django_filters
+
+from api.permissions import IsAdminOrIsSelf
 
 from .models import *
 from .serializers import *
@@ -30,11 +34,11 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     serializer_class = UserSerializer
     pagination_class = UserPagination
-    authentication_classes = []
     model = User
     queryset = User.objects.all()
     filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = UserFilter
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self, pk):
         try:
@@ -71,34 +75,43 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors)
     
-    @action(detail=True, methods=['GET', 'POST', 'PUT'])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAdminOrIsSelf])
     def profile(self, request, pk=None):
-        user = self.get_object(pk=pk)
+        user = self.get_object(pk = pk)
 
         if request.method == 'GET':
-            user_profile = UserProfile.objects.get(user=user)
-            serializer = UserProfileSerializer(user_profile)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                serializer = UserProfileSerializer(user_profile)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except UserProfile.DoesNotExist:
+                return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
         elif request.method == 'POST':
             serializer = UserProfileSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save(user=user)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                try:
+                    serializer.save(user=user)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except IntegrityError as e:
+                    return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         elif request.method == 'PUT':
-            user_profile = UserProfile.objects.get(user=user)
-            serializer = UserProfileSerializer(user_profile, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                serializer = UserProfileSerializer(user_profile, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UserProfile.DoesNotExist:
+                return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
     @action(detail=True, methods=['GET', 'POST', 'PUT'])
     def information(self, request, pk=None):
         user = self.get_object(pk=pk)
-        
+
         if request.method == 'GET':
             user_detail = UserDetail.objects.get(user=user)
             serializer = UserDetailSerializer(user_detail)
