@@ -7,6 +7,11 @@ class FieldSerializer(serializers.ModelSerializer):
         model = Field
         fields = '__all__'
 
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = '__all__'
+
 class UserProfileSerializer(serializers.ModelSerializer):
     fields = FieldSerializer(read_only=True,many=True)
     
@@ -46,9 +51,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return instance
     
 class UserDetailSerializer(serializers.ModelSerializer):
+    organization = OrganizationSerializer(read_only=True)
     class Meta:
         model = UserDetail
-        fields = ['email', 'role', 'is_external']
+        fields = ['email', 'role', 'is_external', 'organization']
 
 class UserSerializer(serializers.ModelSerializer):
     user_detail = UserDetailSerializer(read_only=True)

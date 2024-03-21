@@ -24,7 +24,7 @@ class UserDetail(models.Model):
         LECTURER = 'LEC', _('Dosen')
         STUDENT = 'STU', _('Mahasiswa')
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_detail')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_detail')
     email = models.CharField(max_length=256)
     role = models.CharField(
         max_length=3,
@@ -32,7 +32,7 @@ class UserDetail(models.Model):
         default=UserType.STUDENT,
     )
     is_external = models.BooleanField(default=False)
-    organization = models.OneToOneField(Organization, on_delete=models.CASCADE,  related_name='user_detail')
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, related_name='organization')
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_profile')

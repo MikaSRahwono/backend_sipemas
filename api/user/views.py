@@ -108,7 +108,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             except UserProfile.DoesNotExist:
                 return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
-    @action(detail=True, methods=['GET', 'POST', 'PUT'])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAdminOrIsSelf])
     def information(self, request, pk=None):
         user = self.get_object(pk=pk)
 
@@ -132,7 +132,7 @@ class UsersViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    @action(detail=True, methods=['PATCH'], url_path='change_availability')
+    @action(detail=True, methods=['PATCH'], url_path='change_availability', permission_classes=[IsAdminOrIsSelf])
     def change_availability(self, request, pk=None):
         user = self.get_object(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
