@@ -7,7 +7,7 @@ from rest_framework_nested import routers
 app_name = 'course'
 
 router = DefaultRouter()
-router.register(r'courses', CourseViewSet, basename='course')
+router.register(r'courses', CourseViewSet, basename='courses')
 router.register(r'fields', FieldViewSet, basename='fields')
 
 urlpatterns = [

@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 
-from ..course.models import Course
+from ..academy.models import Course
 
 class Field(models.Model):
     name = models.CharField(max_length=256)
