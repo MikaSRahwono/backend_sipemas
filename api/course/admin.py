@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import CourseInformation, Prerequisite
 
-# Register your models here.
+admin.register(
+    CourseInformation,
+    Prerequisite,)

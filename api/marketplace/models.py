@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 
+from ..course.models import Course
+
 class Field(models.Model):
     name = models.CharField(max_length=256)
     code = models.CharField(max_length=2)
@@ -10,32 +12,6 @@ class Field(models.Model):
 
     def __str__(self):
         return self.name
-
-class Course(models.Model):
-    class CourseType(models.TextChoices):
-        ONETOONE = 'OO', _('One to One')
-        ONETOMANY = 'OM', _('One to Many')
-
-    title = models.CharField(max_length=256)
-    course_type = models.CharField(
-        max_length=2,
-        choices=CourseType.choices,
-    )
-    is_allowed_new_topic = models.BooleanField()
-    topic_count = models.IntegerField(default=0)
-
-    class Meta:
-        verbose_name_plural = 'courses'
-
-    def __str__(self):
-        return self.title
-
-class CourseInformation(models.Model):
-    course = models.OneToOneField(Course, on_delete=models.CASCADE)
-    html = RichTextField()
-
-    def __str__(self):
-        return self.html
 
 class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -56,24 +32,6 @@ class TopicInformation(models.Model):
 
     def __str__(self):
         return self.html
-
-class Prerequisite(models.Model):
-    class PrerequisiteType(models.TextChoices):
-        SKS = 'SKS', _('Jumlah SKS')
-        SEMESTER = 'SMT', _('Semester')
-        COURSE = 'CRS', _('Mata Kuliah')
-    
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    type = models.CharField(
-        max_length=3,
-        choices=PrerequisiteType.choices,
-        default=PrerequisiteType.SKS,
-    )
-    minimum = models.IntegerField(default=0)
-    maximum = models.IntegerField(default=0, blank=True)
-
-    def __str__(self):
-        return self.type
 
 class Application(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)

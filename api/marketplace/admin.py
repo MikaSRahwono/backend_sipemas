@@ -8,7 +8,5 @@ admin.register(
     Topic,
     Field,
     TopicInformation,
-    CourseInformation,
-    Prerequisite,
     Application,
     ApplicationApproval)(admin.ModelAdmin)

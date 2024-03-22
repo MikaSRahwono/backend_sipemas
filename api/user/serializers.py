@@ -1,19 +1,20 @@
 from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from .models import *
-
-class FieldSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Field
-        fields = '__all__'
+from ..marketplace.models import *
 
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
         fields = '__all__'
 
+class UserFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Field
+        fields = '__all__'
+
 class UserProfileSerializer(serializers.ModelSerializer):
-    fields = FieldSerializer(read_only=True,many=True)
+    fields = UserFieldSerializer(read_only=True,many=True)
     
     class Meta:
         model = UserProfile

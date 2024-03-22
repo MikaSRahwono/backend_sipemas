@@ -1,32 +1,30 @@
 from rest_framework import serializers
 from .models import *
-from ..user.serializers import UserSerializer, FieldSerializer
-
-class PrerequisiteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Prerequisite
-        fields = '__all__'
-
-class CourseInformationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CourseInformation
-        fields = ['html']
-
-class CourseSerializer(serializers.ModelSerializer):
-    prerequisites = PrerequisiteSerializer(many=True, read_only=True)
-    class Meta:
-        model = Course
-        fields = '__all__'
+from ..user.serializers import UserDetailSerializer, UserProfileSerializer
+from ..course.serializers import CourseSerializer
 
 class TopicInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicInformation
         fields = ['html']
 
+class FieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Field
+        fields = '__all__'
+
+class SupervisorSerializer(serializers.ModelSerializer):
+    user_detail = UserDetailSerializer(read_only=True)
+    user_profile = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_detail', 'user_profile']
+
 class TopicListSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
     fields = FieldSerializer(read_only=True,many=True)
-    supervisors = UserSerializer(read_only=True,many=True)
+    supervisors = SupervisorSerializer(read_only=True,many=True)
 
     class Meta:
         ordering = ['-id']
@@ -71,20 +69,15 @@ class TopicListSerializer(serializers.ModelSerializer):
             setattr(instance, k, v)
         instance.save()
         return instance
-    
+
 class TopicDetailSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
     fields = FieldSerializer(many=True)
-    supervisors = UserSerializer(many=True)
+    supervisors = SupervisorSerializer(many=True)
     topic_information = TopicInformationSerializer(read_only=True)
     
     class Meta:
         model = Topic
-        fields = '__all__'
-
-class PrerequisiteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Prerequisite
         fields = '__all__'
 
 class ApplicationApprovalSerializer(serializers.ModelSerializer):
