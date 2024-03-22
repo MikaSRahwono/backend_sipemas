@@ -7,3 +7,4 @@ drf_nested_routers==0.93.5
 drf_yasg==1.21.7
 Requests==2.31.0
 django-filter==24.1
+pillow==10.2.0
