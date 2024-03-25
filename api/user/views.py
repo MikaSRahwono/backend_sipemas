@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import IntegrityError
 import django_filters
 
-from api.permissions import IsAdminOrIsSelf
+from api.permissions import IsAdminOrIsSelf, IsAdmin, IsSelf
 
 from .models import *
 from .serializers import *
@@ -63,6 +63,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(response, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def retrieve(self, request, pk):
+        print(request.user.id)
         user = self.get_object(pk)
         serializer = UserSerializer(user)
         return Response(serializer.data)
@@ -75,7 +76,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors)
     
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAdminOrIsSelf])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAdmin])
     def profile(self, request, pk=None):
         user = self.get_object(pk = pk)
 
@@ -108,7 +109,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             except UserProfile.DoesNotExist:
                 return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAdminOrIsSelf])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAdmin])
     def information(self, request, pk=None):
         user = self.get_object(pk=pk)
 
@@ -132,7 +133,7 @@ class UsersViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    @action(detail=True, methods=['PATCH'], url_path='change_availability', permission_classes=[IsAdminOrIsSelf])
+    @action(detail=True, methods=['PATCH'], url_path='change_availability', permission_classes=[IsAdmin])
     def change_availability(self, request, pk=None):
         user = self.get_object(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
@@ -140,7 +141,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         user_profile.save()
         return Response({'message': 'Availability changed successfully.'}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['PATCH', 'PUT'], url_path='update_picture')
+    @action(detail=True, methods=['PATCH', 'PUT'], url_path='update_picture', permission_classes=[IsAdmin])
     def update_picture(self, request, pk=None):
         user = self.get_object(pk=pk)
         user_profile = UserProfile.objects.get(user=user)
@@ -149,3 +150,118 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserViewSet(viewsets.ModelViewSet):
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk = pk)
+        except:
+            raise ValidationError({'msg':'User Does not exist'})
+        
+    serializer_class = UserSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.none()  
+    pagination_class = None 
+
+    def get_queryset(self):
+        user = self.request.user
+        return User.objects.filter(pk=user.pk)
+        
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.request.user
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+    def update(self, request):
+        user = self.request.user
+        serializer = UserSerializer(user, data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+    @action(detail=False, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAuthenticated])
+    def profile(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                serializer = UserProfileSerializer(user_profile)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except UserProfile.DoesNotExist:
+                return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            serializer = UserProfileSerializer(data=request.data)
+            if serializer.is_valid():
+                try:
+                    serializer.save(user=user)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except IntegrityError as e:
+                    return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif request.method == 'PUT':
+            try:
+                user_profile = UserProfile.objects.get(user=user)
+                serializer = UserProfileSerializer(user_profile, data=request.data, context={'request': request})
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UserProfile.DoesNotExist:
+                return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['GET', 'POST', 'PUT'], permission_classes=[IsAuthenticated])
+    def information(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                user_detail = UserDetail.objects.get(user=user)
+                serializer = UserDetailSerializer(user_detail)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except UserDetail.DoesNotExist:
+                return Response({'error': 'User detail does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                serializer = UserDetailSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(user=user)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UserDetail.DoesNotExist:
+                return Response({'error': 'User detail does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                user_detail = UserDetail.objects.get(user=user)
+                serializer = UserDetailSerializer(user_detail, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UserDetail.DoesNotExist:
+                return Response({'error': 'User detail does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['PATCH'], url_path='change_availability', permission_classes=[IsAuthenticated])
+    def change_availability(self, request):
+        user = self.request.user
+        user_profile = UserProfile.objects.get(user=user)
+        user_profile.is_open = not user_profile.is_open
+        user_profile.save()
+        return Response({'message': 'Availability changed successfully.'}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['PATCH', 'PUT'], url_path='update_picture', permission_classes=[IsAuthenticated])
+    def update_picture(self, request):
+        user = self.request.user
+        user_profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

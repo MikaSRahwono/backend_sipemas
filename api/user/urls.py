@@ -7,7 +7,8 @@ from rest_framework_nested import routers
 app_name = 'user'
 
 router = DefaultRouter()
-router.register(r'', UsersViewSet, basename='student')
+router.register(r'all', UsersViewSet, basename='all')
+router.register(r'account', UserViewSet, basename='account')
 
 urlpatterns = [
     path(r'', include(router.urls)),

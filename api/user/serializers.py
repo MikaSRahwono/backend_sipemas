@@ -32,11 +32,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return user_profile
     
     def update(self, instance, validated_data):
-        user = self.context['request'].user
-
-        if user.pk != instance.pk:
-            raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
-        
         try: 
             fields = self.initial_data['fields']
             fieldsInstances = []
