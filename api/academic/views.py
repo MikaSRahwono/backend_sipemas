@@ -18,21 +18,18 @@ from ..marketplace.models import Field
 
 # Create your views here.
 class CourseViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'destroy', 'information']:
+            if self.request.method == 'GET':
+                return [ReadOnlyOrAdmin()]
+            else:
+                return [IsAdmin()]
+        return []
+    
     permission_classes = [IsAdmin]
     serializer_class = CourseSerializer
     model = Course
     queryset = Course.objects.all()
-
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'destroy', 'information']:
-            if self.request.method == 'GET':
-                # Apply ReadOnlyOrSuperUser permission for GET requests within the information action
-                return [ReadOnlyOrAdmin()]
-            else:
-                # Apply IsSuperUser permission for other methods within the information action
-                return [IsAdmin()]
-        # For other actions (like retrieve and list), no permissions are required
-        return []
 
     def retrieve(self, request, *args, **kwargs):
         self.permission_classes = []
@@ -104,6 +101,15 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class FieldViewSet(viewsets.ModelViewSet):
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'destroy', 'information']:
+            if self.request.method == 'GET':
+                return [ReadOnlyOrAdmin()]
+            else:
+                return []
+        return []
+    
     permission_classes = [IsAdmin]
     serializer_class = FieldSerializer
     model = Field

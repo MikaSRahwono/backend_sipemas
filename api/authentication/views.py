@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .utils import sso_api, get_faculty_info
 from .serializers import MyTokenObtainPairSerializer, RegisterSerializer
 from ..user.serializers import UserDetailSerializer
+from django.contrib.auth.models import User, Group
 
 class MyObtainTokenPairView(TokenObtainPairView):
     permission_classes = (AllowAny,)
@@ -49,7 +50,32 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 serializer = UserDetailSerializer(data=user_detail)
 
                 if serializer.is_valid():
+                    group = Group.objects.get(name='Student')
+
+                    user.groups.add(group)
                     serializer.save(user=user, organization=organization_class)
+
+                    serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
+                    serializer.is_valid(raise_exception=True)
+                    token_data = serializer.validated_data
+                    refresh_token = RefreshToken.for_user(user)
+                    access_token = token_data['access']
+
+                    return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            elif sso_data['nama_role'] == 'dosen':
+                user_detail = {
+                    'email': email,
+                    'role' : 'LEC',
+                    'is_external': False
+                }
+                serializer = UserDetailSerializer(data=user_detail)
+                if serializer.is_valid():
+                    group = Group.objects.get(name='Lecturer')
+
+                    user.groups.add(group)
+                    serializer.save(user=user)
 
                     serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
                     serializer.is_valid(raise_exception=True)
@@ -63,11 +89,14 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             else:
                 user_detail = {
                     'email': email,
-                    'role' : 'LEC',
+                    'role' : 'SEC',
                     'is_external': False
                 }
                 serializer = UserDetailSerializer(data=user_detail)
                 if serializer.is_valid():
+                    group = Group.objects.get(name='Secretary')
+
+                    user.groups.add(group)
                     serializer.save(user=user)
 
                     serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})

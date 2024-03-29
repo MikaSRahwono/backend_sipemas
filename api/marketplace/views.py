@@ -10,6 +10,8 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 
+from api.permissions import IsAdmin, ReadOnlyOrAdmin, IsLecturer
+
 from .signals import application_creation_done
 
 import django_filters
@@ -30,21 +32,28 @@ class TopicViewSet(viewsets.ModelViewSet):
             return TopicDetailSerializer
         else:
             return super().get_serializer_class()
+        
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'destroy', 'information']:
+            if self.request.method == 'GET':
+                return [ReadOnlyOrAdmin()]
+            else:
+                return [IsLecturer()]
+        return []
     
-    serializer_class = TopicListSerializer
-    pagination_class = TopicPagination
-    authentication_classes = []
-    model = Topic
-    queryset = Topic.objects.all()
-    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
-    filterset_class = TopicFilter
-    ordering_fields = ['title', 'created_on'] 
-
     def get_object(self, pk):
         try:
             return Topic.objects.get(pk = pk)
         except:
             raise ValidationError({'msg':'Topic Does not exist'})
+    
+    serializer_class = TopicListSerializer
+    pagination_class = TopicPagination
+    model = Topic
+    queryset = Topic.objects.all()
+    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = TopicFilter
+    ordering_fields = ['title', 'created_on'] 
 
     def retrieve(self, request, pk):
         topic = self.get_object(pk)

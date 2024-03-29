@@ -50,21 +50,19 @@ class TopicListSerializer(serializers.ModelSerializer):
         return topic
     
     def update(self, instance, validated_data):
-        try: 
-            fields = self.initial_data['fields']
-            fieldsInstances = []
-            for field in fields:
-                fieldsInstances.append(Field.objects.get(pk = field['id']))
-            instance.fields.set(fieldsInstances) 
+        fields = self.initial_data['fields']
+        fieldsInstances = []
 
-            supervisors = self.initial_data['supervisors']
-            supervisorsInstances = []
-            for supervisor in supervisors:
-                supervisorsInstances.append(Field.objects.get(pk = supervisor['id']))
-            instance.supervisors.set(supervisorsInstances) 
+        for field in fields:
+            fieldsInstances.append(Field.objects.get(pk = field['id']))
+        instance.fields.set(fieldsInstances) 
 
-        except:
-            pass
+        supervisors = self.initial_data['supervisors']
+        supervisorsInstances = []
+        for supervisor in supervisors:
+            supervisorsInstances.append(User.objects.get(pk = supervisor['id']))
+        instance.supervisors.set(supervisorsInstances) 
+
         for k, v in validated_data.items():
             setattr(instance, k, v)
         instance.save()

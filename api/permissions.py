@@ -32,7 +32,6 @@ class IsSelf(BasePermission):
     """
 
     def has_permission(self, request, view):
-        # Check if the user is accessing their own detail
         user_id = view.kwargs.get('pk')
         if user_id and str(request.user.id) == user_id:
             return True
@@ -46,6 +45,17 @@ class ReadOnlyOrAdmin(IsAdmin):
 
     def has_permission(self, request, view):
         if request.method == 'GET':
-            # Allow read-only access for non-superusers for GET requests
             return True
         return super().has_permission(request, view)
+    
+class IsLecturer(BasePermission):
+    """
+    Custom permission to only allow access to lecturers.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            user_groups = request.user.groups.values_list('name', flat=True)
+            print("User groups:", user_groups)
+            return request.user.groups.filter(name='Lecturer').exists()
+        return False
