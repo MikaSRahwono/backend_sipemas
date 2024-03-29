@@ -79,11 +79,14 @@ class CourseViewSet(viewsets.ModelViewSet):
                     return Response({"error": "CourseInformation not found"}, status=status.HTTP_404_NOT_FOUND)
             
             elif request.method == 'POST':
-                serializer = CourseInformationSerializer(data=request.data)
-                if serializer.is_valid():
-                    serializer.save(course=course)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    serializer = CourseInformationSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(course=course)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                except IntegrityError as e:
+                        return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
             
             elif request.method == 'PUT':
                 try:

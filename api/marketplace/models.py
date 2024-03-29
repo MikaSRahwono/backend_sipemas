@@ -27,7 +27,7 @@ class Topic(models.Model):
         return self.title
 
 class TopicInformation(models.Model):
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    topic = models.OneToOneField(Topic, on_delete=models.CASCADE)
     html = RichTextField()
 
     def __str__(self):

@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render
 
 from rest_framework.response import Response
@@ -77,25 +78,39 @@ class TopicViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['GET', 'POST', 'PUT'])
     def information(self, request, pk=None):
-        topic = self.get_object()
+        try:
+            topic = self.get_object(pk=pk)
 
-        if request.method == 'GET':
-            topic_information = TopicInformation.objects.get(topic=topic)
-            return render(request, "marketplace/topic_detail.html", {"html": topic_information.__str__})
-        
-        elif request.method == 'POST':
-            serializer = TopicInformationSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(topic=topic)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        elif request.method == 'PUT':
-            serializer = TopicInformationSerializer(topic_information, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if request.method == 'GET':
+                try:
+                    topic_information = TopicInformation.objects.get(topic=topic)
+                    return render(request, "marketplace/topic_detail.html", {"html": topic_information.__str__})
+                except TopicInformation.DoesNotExist:
+                        return Response({"error": "TopicInformation not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            elif request.method == 'POST':
+                try:
+                    serializer = TopicInformationSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(topic=topic)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                except IntegrityError as e:
+                    return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
+            
+            elif request.method == 'PUT':
+                try:
+                    topic_information = TopicInformation.objects.get(topic=topic)
+                    serializer = TopicInformationSerializer(topic_information, data=request.data)
+                    if serializer.is_valid():
+                        serializer.save()
+                        return Response(serializer.data)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                except TopicInformation.DoesNotExist:
+                    return Response({"error": "Topic information not found"}, status=status.HTTP_404_NOT_FOUND)
+                
+        except Topic.DoesNotExist:
+            return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
         
     @action(detail=True, methods=['POST'], url_path='apply')
     def apply(self, request, pk=None):
