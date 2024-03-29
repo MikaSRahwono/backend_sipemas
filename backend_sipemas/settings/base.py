@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'api.marketplace',
     'api.authentication',
     'api.user',
+    'api.academic',
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg',

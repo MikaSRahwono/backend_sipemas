@@ -7,7 +7,7 @@ class Course(models.Model):
         ONETOONE = 'OO', _('One to One')
         ONETOMANY = 'OM', _('One to Many')
 
-    kd_mk = models.CharField(max_length=9, primary_key=True)
+    kd_mk = models.CharField(max_length=12, primary_key=True)
     nm_mk = models.CharField(max_length=256)
     sks = models.IntegerField()
     course_type = models.CharField(

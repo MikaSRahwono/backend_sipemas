@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from ..user.serializers import UserDetailSerializer, UserProfileSerializer
-from ..academy.serializers import CourseSerializer
+from ..academic.serializers import CourseSerializer
 
 class TopicInformationSerializer(serializers.ModelSerializer):
     class Meta:

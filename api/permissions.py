@@ -19,7 +19,7 @@ class IsAdminOrIsSelf(BasePermission):
     
 class IsAdmin(BasePermission):
     """
-    Custom permission to only allow admin users or the user themselves to access.
+    Custom permission to only allow admin users
     """
 
     def has_permission(self, request, view):
@@ -31,7 +31,7 @@ class IsAdmin(BasePermission):
     
 class IsSelf(BasePermission):
     """
-    Custom permission to only allow admin users or the user themselves to access.
+    Custom permission to only allow the user themselves to access.
     """
 
     def has_permission(self, request, view):
