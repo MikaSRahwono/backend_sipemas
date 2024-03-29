@@ -23,11 +23,8 @@ class IsAdmin(BasePermission):
     """
 
     def has_permission(self, request, view):
-        # Check if the user is an admin
-        if request.user.is_superuser:
-            return True
-        
-        return False
+        return request.user and request.user.is_superuser
+
     
 class IsSelf(BasePermission):
     """
@@ -41,3 +38,14 @@ class IsSelf(BasePermission):
             return True
         
         return False
+
+class ReadOnlyOrAdmin(IsAdmin):
+    """
+    Custom permission to allow read-only access for non-superusers.
+    """
+
+    def has_permission(self, request, view):
+        if request.method == 'GET':
+            # Allow read-only access for non-superusers for GET requests
+            return True
+        return super().has_permission(request, view)

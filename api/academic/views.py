@@ -6,6 +6,9 @@ from rest_framework import status
 from rest_framework.generics import *
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+
+from api.permissions import IsAdmin, ReadOnlyOrAdmin
 
 from .models import *
 from .serializers import *
@@ -15,12 +18,24 @@ from ..marketplace.models import Field
 
 # Create your views here.
 class CourseViewSet(viewsets.ModelViewSet):
-    authentication_classes = []
+    permission_classes = [IsAdmin]
     serializer_class = CourseSerializer
     model = Course
     queryset = Course.objects.all()
 
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'destroy', 'information']:
+            if self.request.method == 'GET':
+                # Apply ReadOnlyOrSuperUser permission for GET requests within the information action
+                return [ReadOnlyOrAdmin()]
+            else:
+                # Apply IsSuperUser permission for other methods within the information action
+                return [IsAdmin()]
+        # For other actions (like retrieve and list), no permissions are required
+        return []
+
     def retrieve(self, request, *args, **kwargs):
+        self.permission_classes = []
         try:
             instance = self.get_object()
         except Course.DoesNotExist:
@@ -30,6 +45,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
+        self.permission_classes = [IsAdmin]
         serializer = CourseSerializer(data = request.data)
         if serializer.is_valid():
             try:
@@ -40,6 +56,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
+        self.permission_classes = [IsAdmin]
         course = self.get_object()
 
         existing_kd_mk = course.kd_mk
@@ -52,7 +69,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(serializer.errors)
     
-    @action(detail=True, methods=['GET', 'POST', 'PUT'])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], permission_classes = [IsAdmin])
     def information(self, request, pk=None):
         try:
             course = self.get_object()
@@ -87,7 +104,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class FieldViewSet(viewsets.ModelViewSet):
-    authentication_classes = []
+    permission_classes = [IsAdmin]
     serializer_class = FieldSerializer
     model = Field
     queryset = Field.objects.all()
