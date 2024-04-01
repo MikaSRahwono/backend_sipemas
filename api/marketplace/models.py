@@ -34,7 +34,9 @@ class TopicInformation(models.Model):
         return self.html
 
 class Application(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applicants_leader')
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    applicants = models.ManyToManyField(User, related_name='applicants')
     praproposal = models.CharField(max_length=256)
     is_approved = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -42,7 +44,7 @@ class Application(models.Model):
 
 class ApplicationApproval(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
-    approvee = models.ManyToManyField(User)
+    approvee = models.ForeignKey(User, on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
     is_supervisor = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)

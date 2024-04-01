@@ -10,10 +10,11 @@ from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated
 
-from api.permissions import IsAdmin, ReadOnlyOrAdmin, IsLecturer
+from api.permissions import IsAdmin, IsSecretary, ReadOnlyOrAdmin, IsLecturer
 
-from .signals import application_creation_done
+# from .signals import application_creation_done
 
 import django_filters
 
@@ -40,6 +41,8 @@ class TopicViewSet(viewsets.ModelViewSet):
                 return [ReadOnlyOrAdmin()]
             else:
                 return [IsLecturer()]
+        elif self.action in ['apply']:
+            return [IsAuthenticated()]
         return []
     
     def get_object(self, pk):
@@ -114,16 +117,21 @@ class TopicViewSet(viewsets.ModelViewSet):
         
     @action(detail=True, methods=['POST'], url_path='apply')
     def apply(self, request, pk=None):
-        topic = self.get_object(pk=pk)
+        try:
+            topic = self.get_object(pk=pk)
+            user = self.request.user
+            
+            serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
+            if serializer.is_valid():
+                application = serializer.save(topic=topic, user=user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        serializer = ApplicationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(topic = topic)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Topic.DoesNotExist:
+                return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
     
-class ApplicationViewSet(viewsets.ModelViewSet):
-    authentication_classes = []
+class ApplicationsViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsSecretary,)
     serializer_class = ApplicationSerializer
     model = Application
     queryset = Application.objects.all()
@@ -138,21 +146,50 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
     def retrieve(self, serializer):
+        instance = self.request.user
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+    # def create(self, request, *args, **kwargs):
+    #     application_data = request.data.copy()
+    #     users_data = application_data.pop('users', [])
+
+    #     serializer = self.get_serializer(data=application_data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+
+    #     application = Application.objects.filter(topic__id=application_data.pop('id'))
+
+    #     application_creation_done.send(sender=Application, users_data_list=users_data, application=application)
+
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+class ApprovalViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsSecretary,)
+    serializer_class = ApplicationApprovalSerializer
+    model = ApplicationApproval
+    queryset = ApplicationApproval.objects.all()
+    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    ordering_fields = ['created_on']
+
+    def retrieve(self, serializer):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
-    def perform_create(self, request, *args, **kwargs):
-        application_data = request.data.copy()
-        users_data = application_data.pop('users', [])
+    # def create(self, request, *args, **kwargs):
+    #     application_data = request.data.copy()
+    #     users_data = application_data.pop('users', [])
 
-        serializer = self.get_serializer(data=application_data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+    #     serializer = self.get_serializer(data=application_data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
 
-        application = Application.objects.filter(topic__id=application_data.pop('id'))
+    #     application = Application.objects.filter(topic__id=application_data.pop('id'))
 
-        application_creation_done.send(sender=Application, users_data_list=users_data, application=application)
+    #     application_creation_done.send(sender=Application, users_data_list=users_data, application=application)
 
 
     def perform_update(self, serializer):

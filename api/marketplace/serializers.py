@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from .models import *
 from ..user.serializers import UserDetailSerializer, UserProfileSerializer
 from ..academic.serializers import CourseSerializer
@@ -14,6 +16,14 @@ class FieldSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SupervisorSerializer(serializers.ModelSerializer):
+    user_detail = UserDetailSerializer(read_only=True)
+    user_profile = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_detail', 'user_profile']
+
+class ApplicantsSerializer(serializers.ModelSerializer):
     user_detail = UserDetailSerializer(read_only=True)
     user_profile = UserProfileSerializer(read_only=True)
 
@@ -78,12 +88,30 @@ class TopicDetailSerializer(serializers.ModelSerializer):
         model = Topic
         fields = '__all__'
 
+class ApplicationSerializer(serializers.ModelSerializer):
+    applicants = ApplicantsSerializer(read_only=True,many=True)
+
+    class Meta:
+        model = Application
+        fields = '__all__'
+        read_only_fields = ('created_on', 'updated_on', 'topic', 'user')
+
+    def create(self,validated_data):
+        applicants = self.initial_data['applicants']
+        applicantsInstances = []
+
+        if len(applicants) > 2:
+            raise ValidationError("More than 2 applicants are not allowed.")
+        
+        for applicant in applicants:
+            applicantsInstances.append(User.objects.get(id = applicant['id']))
+        application = Application.objects.create(**validated_data)
+        application.applicants.set(applicantsInstances)
+
+        return application
+
 class ApplicationApprovalSerializer(serializers.ModelSerializer):
+    application = ApplicationSerializer()
     class Meta:
         model = ApplicationApproval
         fields = '__all__'
-
-class ApplicationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Application
-        fields = ['praproposal', 'is_approved', 'created_on', 'updated_on']

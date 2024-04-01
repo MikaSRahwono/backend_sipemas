@@ -59,3 +59,27 @@ class IsLecturer(BasePermission):
             print("User groups:", user_groups)
             return request.user.groups.filter(name='Lecturer').exists()
         return False
+    
+class IsStudent(BasePermission):
+    """
+    Custom permission to only allow access to students.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            user_groups = request.user.groups.values_list('name', flat=True)
+            print("User groups:", user_groups)
+            return request.user.groups.filter(name='Student').exists()
+        return False
+    
+class IsSecretary(BasePermission):
+    """
+    Custom permission to only allow access to secretary.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            user_groups = request.user.groups.values_list('name', flat=True)
+            print("User groups:", user_groups)
+            return request.user.groups.filter(name='Secretary').exists()
+        return False
