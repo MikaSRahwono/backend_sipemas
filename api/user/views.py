@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import IntegrityError
 import django_filters
 
+from api.marketplace.serializers import ApplicationApprovalSerializer, ApplicationSerializer
 from api.permissions import IsAdminOrIsSelf, IsAdmin, IsSelf
 
 from .models import *
@@ -265,3 +266,48 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @action(detail=False, methods=['GET', 'PUT'], url_path='applications', permission_classes=[IsAuthenticated])
+    def applications(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                applications = Application.objects.filter(user=user)
+                serializer = ApplicationSerializer(applications, many=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Application.DoesNotExist:
+                return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                application = Application.objects.get(user=user)
+                serializer = ApplicationSerializer(application, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UserDetail.DoesNotExist:
+                return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['GET', 'PUT'], url_path='approvals', permission_classes=[IsAuthenticated])
+    def approvals(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                approval = ApplicationApproval.objects.filter(approvee=user)
+                serializer = ApplicationApprovalSerializer(approval, many=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Application.DoesNotExist:
+                return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                approval = ApplicationApproval.objects.get(approvee=user)
+                serializer = ApplicationApprovalSerializer(approval, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except UserDetail.DoesNotExist:
+                return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)    
