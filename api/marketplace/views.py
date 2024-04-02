@@ -178,19 +178,28 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
-    # def create(self, request, *args, **kwargs):
-    #     application_data = request.data.copy()
-    #     users_data = application_data.pop('users', [])
-
-    #     serializer = self.get_serializer(data=application_data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-
-    #     application = Application.objects.filter(topic__id=application_data.pop('id'))
-
-    #     application_creation_done.send(sender=Application, users_data_list=users_data, application=application)
-
 
     def perform_update(self, serializer):
         serializer.save()
+
+    def get_object(self, pk):
+        try:
+            return ApplicationApproval.objects.get(pk = pk)
+        except:
+            raise ValidationError({'msg':'Application Approval Does not exist'})
+
+    @action(detail=True, methods=['PATCH'], url_path='approve', permission_classes=[IsAuthenticated])
+    def approve(self, request, pk=None):
+        try:
+            application_approval = self.get_object(pk=pk)
+            user = self.request.user
+            if application_approval.approvee == user:
+                if application_approval.is_approved == True:
+                    return Response({'message': 'Application AlreadyApproved'}, status=status.HTTP_200_OK)
+                application_approval.is_approved = not application_approval.is_approved
+                application_approval.save()
+                return Response({'message': 'Application Approved'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': "You don't have permission to approve"}, status=status.HTTP_404_NOT_FOUND)
+        except ApplicationApproval.DoesNotExist:
+            return Response({'error': 'Application does not exist'}, status=status.HTTP_404_NOT_FOUND)
