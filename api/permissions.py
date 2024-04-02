@@ -55,8 +55,6 @@ class IsLecturer(BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            user_groups = request.user.groups.values_list('name', flat=True)
-            print("User groups:", user_groups)
             return request.user.groups.filter(name='Lecturer').exists()
         return False
     
@@ -67,8 +65,6 @@ class IsStudent(BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            user_groups = request.user.groups.values_list('name', flat=True)
-            print("User groups:", user_groups)
             return request.user.groups.filter(name='Student').exists()
         return False
     
@@ -79,7 +75,5 @@ class IsSecretary(BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
-            user_groups = request.user.groups.values_list('name', flat=True)
-            print("User groups:", user_groups)
             return request.user.groups.filter(name='Secretary').exists()
         return False

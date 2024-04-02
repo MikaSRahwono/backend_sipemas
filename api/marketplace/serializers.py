@@ -35,6 +35,7 @@ class TopicListSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
     fields = FieldSerializer(read_only=True,many=True)
     supervisors = SupervisorSerializer(read_only=True,many=True)
+    creator = UserDetailSerializer(read_only=True)
 
     class Meta:
         ordering = ['-id']
@@ -115,3 +116,59 @@ class ApplicationApprovalSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApplicationApproval
         fields = '__all__'
+
+class TopicRequestSerializer(serializers.ModelSerializer):
+    course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
+    fields = FieldSerializer(read_only=True,many=True)
+    supervisors = SupervisorSerializer(read_only=True,many=True)
+    creator = UserDetailSerializer(read_only=True)
+
+    class Meta:
+        ordering = ['-id']
+        model = TopicRequest
+        fields = '__all__'
+
+    def create(self,validated_data):
+        fields = self.initial_data['fields']
+        fieldsInstances = []
+        
+        for field in fields:
+            fieldsInstances.append(Field.objects.get(id = field['id']))
+        topic_request = TopicRequest.objects.create(**validated_data)
+        topic_request.fields.set(fieldsInstances)
+        
+        supervisors = self.initial_data['supervisors']
+        supervisorsInstances = []
+        
+        for supervisor in supervisors:
+            supervisorsInstances.append(User.objects.get(id = supervisor['id']))
+        topic_request.supervisors.set(supervisorsInstances)
+
+        return topic_request
+    
+    def update(self, instance, validated_data):
+        fields = self.initial_data['fields']
+        fieldsInstances = []
+
+        for field in fields:
+            fieldsInstances.append(Field.objects.get(pk = field['id']))
+        instance.fields.set(fieldsInstances) 
+
+        supervisors = self.initial_data['supervisors']
+        supervisorsInstances = []
+        for supervisor in supervisors:
+            supervisorsInstances.append(User.objects.get(pk = supervisor['id']))
+        instance.supervisors.set(supervisorsInstances) 
+
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+        instance.save()
+        return instance
+
+class TopicRequestApprovalSerializer(serializers.ModelSerializer):
+    topic_request = TopicRequestSerializer()
+
+    class Meta:
+        model = TopicRequestApproval
+        fields = '__all__'
+        

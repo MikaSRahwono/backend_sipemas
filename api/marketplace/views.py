@@ -41,8 +41,10 @@ class TopicViewSet(viewsets.ModelViewSet):
                 return [ReadOnlyOrAdmin()]
             else:
                 return [IsLecturer()]
-        elif self.action in ['apply']:
+        elif self.action in ['apply', 'request']:
             return [IsAuthenticated()]
+        elif self.action in ['all_requests']:
+            return [IsLecturer(), IsSecretary()]
         return []
     
     def get_object(self, pk):
@@ -65,14 +67,21 @@ class TopicViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
+        user = self.request.user
+
         serializer = TopicListSerializer(data = request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(creator=user)
             return Response(serializer.data)
         return Response(serializer.errors)
 
     def update(self, request, pk):
+        user = self.request.user
         topic = self.get_object(pk = pk)
+
+        if topic.creator != user:
+            return Response({"error": "You don't have permission to change this topic"}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = TopicListSerializer(topic, data = request.data)
         if serializer.is_valid():
             serializer.save()
@@ -93,6 +102,10 @@ class TopicViewSet(viewsets.ModelViewSet):
             
             elif request.method == 'POST':
                 try:
+                    user = self.request.user
+                    if topic.creator != user:
+                        return Response({"error": "You don't have permission to change this topic"}, status=status.HTTP_404_NOT_FOUND)
+        
                     serializer = TopicInformationSerializer(data=request.data)
                     if serializer.is_valid():
                         serializer.save(topic=topic)
@@ -103,6 +116,10 @@ class TopicViewSet(viewsets.ModelViewSet):
             
             elif request.method == 'PUT':
                 try:
+                    user = self.request.user
+                    if topic.creator != user:
+                        return Response({"error": "You don't have permission to change this topic"}, status=status.HTTP_404_NOT_FOUND)
+        
                     topic_information = TopicInformation.objects.get(topic=topic)
                     serializer = TopicInformationSerializer(topic_information, data=request.data)
                     if serializer.is_valid():
@@ -129,6 +146,32 @@ class TopicViewSet(viewsets.ModelViewSet):
         
         except Topic.DoesNotExist:
                 return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['POST'], url_path='request')
+    def request(self, request, pk=None):
+            try:
+                user = self.request.user
+                
+                serializer = TopicRequestSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(creator=user)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+            except IntegrityError as e:
+                return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
+            
+    @action(detail=False, methods=['GET'], url_path='all-topic-requests')
+    def all_requests(self, request, pk=None):
+        try:
+            user = self.request.user
+            print(user)
+            topic_requests = TopicRequest.objects.all()
+            serializer = TopicRequestSerializer(topic_requests, many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except TopicRequest.DoesNotExist:
+            return Response({'error': 'Topic Request does not exist'}, status=status.HTTP_404_NOT_FOUND)
+                
     
 class ApplicationsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsSecretary,)
@@ -149,24 +192,70 @@ class ApplicationsViewSet(viewsets.ModelViewSet):
         instance = self.request.user
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
-    # def create(self, request, *args, **kwargs):
-    #     application_data = request.data.copy()
-    #     users_data = application_data.pop('users', [])
-
-    #     serializer = self.get_serializer(data=application_data)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-
-    #     application = Application.objects.filter(topic__id=application_data.pop('id'))
-
-    #     application_creation_done.send(sender=Application, users_data_list=users_data, application=application)
-
 
     def perform_update(self, serializer):
         serializer.save()
 
-class ApprovalViewSet(viewsets.ModelViewSet):
+class ApplicationApprovalViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsSecretary,)
+    serializer_class = ApplicationApprovalSerializer
+    model = ApplicationApproval
+    queryset = ApplicationApproval.objects.all()
+    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    ordering_fields = ['created_on']
+
+    def retrieve(self, serializer):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def get_object(self, pk):
+        try:
+            return ApplicationApproval.objects.get(pk = pk)
+        except:
+            raise ValidationError({'msg':'Application Approval Does not exist'})
+
+    @action(detail=True, methods=['PATCH'], url_path='approve', permission_classes=[IsAuthenticated])
+    def approve(self, request, pk=None):
+        try:
+            application_approval = self.get_object(pk=pk)
+            user = self.request.user
+            if application_approval.approvee == user:
+                if application_approval.is_approved == True:
+                    return Response({'message': 'Application AlreadyApproved'}, status=status.HTTP_200_OK)
+                application_approval.is_approved = not application_approval.is_approved
+                application_approval.save()
+                return Response({'message': 'Application Approved'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': "You don't have permission to approve"}, status=status.HTTP_404_NOT_FOUND)
+        except ApplicationApproval.DoesNotExist:
+            return Response({'error': 'Application does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+class TopicRequestViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsSecretary,)
+    serializer_class = TopicRequestSerializer
+    model = TopicRequest
+    queryset = TopicRequest.objects.all()
+    ordering_fields = ['created_on']
+
+    def get_queryset(self):
+        topics_id = self.kwargs.get('topics_pk')
+        if topics_id:
+            return Application.objects.filter(topic__id=topics_id)
+        return super().get_queryset()
+
+    def retrieve(self, serializer):
+        instance = self.request.user
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+    def perform_update(self, serializer):
+        serializer.save()
+
+class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
     permission_classes = (IsSecretary,)
     serializer_class = ApplicationApprovalSerializer
     model = ApplicationApproval

@@ -14,8 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import IntegrityError
 import django_filters
 
-from api.marketplace.serializers import ApplicationApprovalSerializer, ApplicationSerializer
-from api.permissions import IsAdminOrIsSelf, IsAdmin, IsSelf
+from api.marketplace.serializers import ApplicationApprovalSerializer, ApplicationSerializer, TopicListSerializer, TopicRequestSerializer
+from api.permissions import IsAdminOrIsSelf, IsAdmin, IsLecturer, IsSelf
 
 from .models import *
 from .serializers import *
@@ -310,4 +310,32 @@ class UserViewSet(viewsets.ModelViewSet):
                     return Response(serializer.data)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except UserDetail.DoesNotExist:
-                return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)    
+                return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['GET'], url_path='created-topics', permission_classes=[IsLecturer])
+    def created_topics(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                topic = Topic.objects.filter(creator=user)
+                serializer = TopicListSerializer(topic, many=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Application.DoesNotExist:
+                return Response({'error': 'Topic does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=False, methods=['GET'], url_path='topic-requests',  permission_classes=[IsAuthenticated])
+    def topic_requests(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            if request.method == 'GET':
+                try:
+                    topic_requests = TopicRequest.objects.filter(creator=user)
+                    serializer = TopicRequestSerializer(topic_requests, many=True)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except TopicRequest.DoesNotExist:
+                    return Response({'error': 'Topic Request does not exist'}, status=status.HTTP_404_NOT_FOUND)
+                
+        except IntegrityError as e:
+            return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
