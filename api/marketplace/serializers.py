@@ -102,7 +102,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         applicantsInstances = []
 
         if len(applicants) > 2:
-            raise ValidationError("More than 2 applicants are not allowed.")
+            raise ValidationError("More than 3 applicants are not allowed.")
         
         for applicant in applicants:
             applicantsInstances.append(User.objects.get(id = applicant['id']))

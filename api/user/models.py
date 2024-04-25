@@ -32,7 +32,7 @@ class UserDetail(models.Model):
         default=UserType.STUDENT,
     )
     is_external = models.BooleanField(default=False)
-    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, related_name='organization')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='organization')
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_profile')

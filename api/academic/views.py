@@ -7,6 +7,7 @@ from rest_framework.generics import *
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 
 from api.permissions import IsAdmin, ReadOnlyOrAdmin
 
@@ -101,10 +102,24 @@ class CourseViewSet(viewsets.ModelViewSet):
         
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=True, methods=['GET'], url_path='activity_steps', permission_classes = [IsAuthenticated])
+    def activity_steps(self, request, pk=None):
+        try:
+            course = self.get_object()
 
-
+            if request.method == 'GET':
+                try:
+                    activity_steps = ActivityStep.objects.filter(course=course).order_by('index')
+                    serializer = ActivityStepSerializer(activity_steps, many=True)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except CourseInformation.DoesNotExist:
+                    return Response({"error": "CourseInformation not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        except Course.DoesNotExist:
+            return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+        
 class FieldViewSet(viewsets.ModelViewSet):
-
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy', 'information']:
             if self.request.method == 'GET':
@@ -128,3 +143,366 @@ class FieldViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
+
+class ActivityStepViewSet(viewsets.ModelViewSet):
+    queryset = ActivityStep.objects.all()
+    serializer_class = ActivityStepSerializer
+
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_information', permission_classes=[IsAuthenticated])
+    def step_information(self, request, pk=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                step_information = StepInformation.objects.get(activity_step=activity_step)
+                serializer = StepInformationSerializer(step_information)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except StepInformation.DoesNotExist:
+                return Response({'error': 'Step does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if activity_step.type == "INF":
+                    serializer = StepInformationSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(activity_step=activity_step)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be compatible with the step type'}, status=status.HTTP_400_BAD_REQUEST)
+            except StepInformation.DoesNotExist:
+                return Response({'error': 'Activity Step does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                step_information = StepInformation.objects.get(activity_step=activity_step)
+                serializer = StepInformationSerializer(step_information, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except StepInformation.DoesNotExist:
+                return Response({'error': 'Step Information does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_assignment', permission_classes=[IsAuthenticated])
+    def step_assignment(self, request, pk=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                step_assignment = StepAssignment.objects.get(activity_step=activity_step)
+                serializer = StepAssignmentSerializer(step_assignment)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except StepAssignment.DoesNotExist:
+                return Response({'error': 'Assignment Step does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if activity_step.type == "ASG":
+                    serializer = StepAssignmentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(activity_step=activity_step)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be compatible with the step type'}, status=status.HTTP_400_BAD_REQUEST)
+            except StepAssignment.DoesNotExist:
+                return Response({'error': 'Assignment Step does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                step_assignment = StepAssignment.objects.get(activity_step=activity_step)
+                serializer = StepAssignmentSerializer(step_assignment, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except StepAssignment.DoesNotExist:
+                return Response({'error': 'Step Assignment does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_sidang', permission_classes=[IsAuthenticated])
+    def step_sidang(self, request, pk=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                step_sidang = StepSidang.objects.get(activity_step=activity_step)
+                serializer = StepSidangSerializer(step_sidang)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except StepSidang.DoesNotExist:
+                return Response({'error': 'Sidang Step does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if activity_step.type == "SID":
+                    serializer = StepSidangSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(activity_step=activity_step)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be compatible with the step type'}, status=status.HTTP_400_BAD_REQUEST)
+            except StepSidang.DoesNotExist:
+                return Response({'error': 'Sidang Step does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                step_sidang = StepSidang.objects.get(activity_step=activity_step)
+                serializer = StepSidangSerializer(step_sidang, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except StepSidang.DoesNotExist:
+                return Response({'error': 'Step Sidang does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True, methods=['GET', 'POST', 'PUT', 'DELETE'], url_path='step_components', permission_classes=[IsAuthenticated])
+    def step_components(self, request, pk=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                step_components = StepComponent.objects.filter(activity_step=activity_step)
+                serializer = StepComponentSerializer(step_components, many=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except StepComponent.DoesNotExist:
+                return Response({'error': 'Step Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if activity_step.type == "ASG":
+                    serializer = StepComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(activity_step=activity_step)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be compatible Assignment type'}, status=status.HTTP_400_BAD_REQUEST)
+            except StepComponent.DoesNotExist:
+                return Response({'error': 'Step Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['DELETE'], url_path='step_components/(?P<index>\d+)', permission_classes=[IsAuthenticated])
+    def manage_step_component(self, request, pk=None, index=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+
+        if request.method == 'DELETE':
+            try:
+                step_component = StepComponent.objects.get(activity_step=activity_step, index=index)
+                step_component.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except StepComponent.DoesNotExist:
+                return Response({'error': 'Step Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/announcement_components', permission_classes=[IsAuthenticated])
+    def announcement_component(self, request, pk=None, index=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+        step_component = StepComponent.objects.get(activity_step = activity_step, index=index)
+
+        if request.method == 'GET':
+            try:
+                announcement_component = AnnouncementComponent.objects.get(step_component=step_component)
+                serializer = AnnouncementComponentSerializer(announcement_component)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except AnnouncementComponent.DoesNotExist:
+                return Response({'error': 'Announcement component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if step_component.type == "ANN":
+                    serializer = AnnouncementComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(step_component=step_component)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be an announcement step'}, status=status.HTTP_400_BAD_REQUEST)
+            except AnnouncementComponent.DoesNotExist:
+                return Response({'error': 'Announcement Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                announcement_component = AnnouncementComponent.objects.get(step_component=step_component)
+                serializer = AnnouncementComponentSerializer(announcement_component, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except AnnouncementComponent.DoesNotExist:
+                return Response({'error': 'Announcement Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/information_components', permission_classes=[IsAuthenticated])
+    def information_component(self, request, pk=None, index=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+        step_component = StepComponent.objects.get(activity_step = activity_step, index=index)
+
+        if request.method == 'GET':
+            try:
+                information_component = InformationComponent.objects.get(step_component=step_component)
+                serializer = InformationComponentSerializer(information_component)
+                return InformationComponent(serializer.data, status=status.HTTP_201_CREATED)
+            except InformationComponent.DoesNotExist:
+                return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if step_component.type == "INF":
+                    serializer = InformationComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(step_component=step_component)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be an information step'}, status=status.HTTP_400_BAD_REQUEST)
+            except InformationComponent.DoesNotExist:
+                return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                information_component = InformationComponent.objects.get(step_component=step_component)
+                serializer = InformationComponentSerializer(information_component, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except InformationComponent.DoesNotExist:
+                return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/assignment_components', permission_classes=[IsAuthenticated])
+    def assignment_component(self, request, pk=None, index=None):
+        activity_step = ActivityStep.objects.get(pk = pk)
+        step_component = StepComponent.objects.get(activity_step = activity_step, index=index)
+
+        if request.method == 'GET':
+            try:
+                assignment_component = AssignmentComponent.objects.get(step_component=step_component)
+                serializer = AssignmentComponentSerializer(assignment_component)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except AssignmentComponent.DoesNotExist:
+                return Response({'error': 'Assignment component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if step_component.type == "ASG":
+                    serializer = AssignmentComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(step_component=step_component)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be an announcement step'}, status=status.HTTP_400_BAD_REQUEST)
+            except AssignmentComponent.DoesNotExist:
+                return Response({'error': 'Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                assignment_component = AssignmentComponent.objects.get(step_component=step_component)
+                serializer = AssignmentComponentSerializer(assignment_component, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except AssignmentComponent.DoesNotExist:
+                return Response({'error': 'Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class StepComponentViewSet(viewsets.ModelViewSet):
+    queryset = StepComponent.objects.all()
+    serializer_class = StepComponentSerializer
+
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='announcement_component', permission_classes=[IsAuthenticated])
+    def announcement_component(self, request, pk=None):
+        step_component = StepComponent.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                announcement_component = AnnouncementComponent.objects.get(step_component=step_component)
+                serializer = AnnouncementComponentSerializer(announcement_component)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except AnnouncementComponent.DoesNotExist:
+                return Response({'error': 'Announcement component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if step_component.type == "ANN":
+                    serializer = AnnouncementComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(step_component=step_component)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be an announcement step'}, status=status.HTTP_400_BAD_REQUEST)
+            except AnnouncementComponent.DoesNotExist:
+                return Response({'error': 'Announcement Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                announcement_component = AnnouncementComponent.objects.get(step_component=step_component)
+                serializer = AnnouncementComponentSerializer(announcement_component, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except AnnouncementComponent.DoesNotExist:
+                return Response({'error': 'Announcement Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='information_component', permission_classes=[IsAuthenticated])
+    def information_component(self, request, pk=None):
+        step_component = StepComponent.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                information_component = InformationComponent.objects.get(step_component=step_component)
+                serializer = InformationComponentSerializer(information_component)
+                return InformationComponent(serializer.data, status=status.HTTP_201_CREATED)
+            except InformationComponent.DoesNotExist:
+                return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if step_component.type == "INF":
+                    serializer = InformationComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(step_component=step_component)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be an information step'}, status=status.HTTP_400_BAD_REQUEST)
+            except InformationComponent.DoesNotExist:
+                return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                information_component = InformationComponent.objects.get(step_component=step_component)
+                serializer = InformationComponentSerializer(information_component, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except InformationComponent.DoesNotExist:
+                return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='assignment_component', permission_classes=[IsAuthenticated])
+    def assignment_component(self, request, pk=None):
+        step_component = StepComponent.objects.get(pk = pk)
+
+        if request.method == 'GET':
+            try:
+                assignment_component = AssignmentComponent.objects.get(step_component=step_component)
+                serializer = AssignmentComponentSerializer(assignment_component)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except AssignmentComponent.DoesNotExist:
+                return Response({'error': 'Assignment component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'POST':
+            try:
+                if step_component.type == "ANN":
+                    serializer = AssignmentComponentSerializer(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(step_component=step_component)
+                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Must be an announcement step'}, status=status.HTTP_400_BAD_REQUEST)
+            except AssignmentComponent.DoesNotExist:
+                return Response({'error': 'Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                assignment_component = AssignmentComponent.objects.get(step_component=step_component)
+                serializer = AssignmentComponentSerializer(assignment_component, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except AssignmentComponent.DoesNotExist:
+                return Response({'error': 'Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
