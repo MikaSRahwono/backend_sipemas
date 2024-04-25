@@ -50,7 +50,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
     class Meta:
         model = UserDetail
-        fields = ['email', 'role', 'is_external', 'organization']
+        fields = ['email', 'role', 'full_name', 'npm', 'is_external', 'organization']
 
 class UserSerializer(serializers.ModelSerializer):
     user_detail = UserDetailSerializer(read_only=True)

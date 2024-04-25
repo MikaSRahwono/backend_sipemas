@@ -25,6 +25,8 @@ class UserDetail(models.Model):
         STUDENT = 'STU', _('Mahasiswa')
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_detail')
+    full_name = models.CharField(max_length=256)
+    id_code = models.CharField(max_length=256)
     email = models.CharField(max_length=256)
     role = models.CharField(
         max_length=3,

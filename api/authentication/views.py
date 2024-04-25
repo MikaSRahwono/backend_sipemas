@@ -38,13 +38,18 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             email = f'{username}@ui.ac.id'
             user = User.objects.create_user(username=username, password=password, email=email)
             if sso_data['nama_role'] == 'mahasiswa':
+                print(sso_data)
                 prodi  = sso_data['kode_org'].split(":")[0]
+                full_name =  sso_data['nama']
+                id_code =  sso_data['kodeidentitas']
                 organization_class = Organization.objects.get(id = prodi)
                 
                 user_detail = {
                     'email': email,
                     'role' : 'STU',
-                    'is_external': False
+                    'is_external': False,
+                    'full_name': full_name,
+                    'id_code': id_code
                 }
 
                 serializer = UserDetailSerializer(data=user_detail)
@@ -65,10 +70,15 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             elif sso_data['nama_role'] == 'dosen':
+                full_name =  sso_data['nama']
+                id_code =  sso_data['kodeidentitas']
+
                 user_detail = {
                     'email': email,
                     'role' : 'LEC',
-                    'is_external': False
+                    'is_external': False,
+                    'full_name': full_name,
+                    'id_code': id_code
                 }
                 serializer = UserDetailSerializer(data=user_detail)
                 if serializer.is_valid():
@@ -87,10 +97,15 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
+                full_name =  sso_data['nama']
+                id_code =  sso_data['kodeidentitas']
+                
                 user_detail = {
                     'email': email,
                     'role' : 'SEC',
-                    'is_external': False
+                    'is_external': False,
+                    'full_name': full_name,
+                    'id_code': id_code
                 }
                 serializer = UserDetailSerializer(data=user_detail)
                 if serializer.is_valid():
