@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from api.permissions import IsAdmin, IsSecretary, ReadOnlyOrAdmin, IsLecturer
 
-# from .signals import application_creation_done
+from .signals import application_approved_signal
 
 import django_filters
 
@@ -220,19 +220,21 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['PATCH'], url_path='approve', permission_classes=[IsAuthenticated])
     def approve(self, request, pk=None):
-        try:
-            application_approval = self.get_object(pk=pk)
-            user = self.request.user
-            if application_approval.approvee == user:
-                if application_approval.is_approved == True:
-                    return Response({'message': 'Application AlreadyApproved'}, status=status.HTTP_200_OK)
-                application_approval.is_approved = not application_approval.is_approved
-                application_approval.save()
-                return Response({'message': 'Application Approved'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': "You don't have permission to approve"}, status=status.HTTP_404_NOT_FOUND)
-        except ApplicationApproval.DoesNotExist:
-            return Response({'error': 'Application does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        application_approval = self.get_object(pk)
+        user = request.user
+
+        if application_approval.approvee != user:
+            return Response({'error': "You don't have permission to approve"}, status=status.HTTP_403_FORBIDDEN)
+
+        if application_approval.is_approved:
+            return Response({'message': 'Application already approved'}, status=status.HTTP_200_OK)
+
+        application_approval.is_approved = True
+        application_approval.save()
+
+        application_approved_signal.send(sender=ApplicationApproval, application_approval=application_approval, user=user)
+        
+        return Response({'message': 'Application Approved'}, status=status.HTTP_200_OK)
         
 class TopicRequestViewSet(viewsets.ModelViewSet):
     permission_classes = (IsSecretary,)
