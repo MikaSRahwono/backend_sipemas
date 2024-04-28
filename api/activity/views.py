@@ -87,3 +87,17 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
             return handle_post_request(request, activity, assignment_component)
         elif request.method == 'PUT':
             return handle_put_request(request, activity, assignment_component)
+        
+    @action(detail=True, methods=['POST'], url_path='activity_step/(?P<activity_step_id>\d+)/complete', permission_classes=[IsAuthenticated])
+    def complete_step(self, request, pk=None, activity_step_id=None):
+        activity, activity_step = self.get_activity_and_activity_step(pk, activity_step_id)
+
+        def handle_post_request(self, request, activity, activity_step):
+            serializer = StepCompletionSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(activity=activity, activity_step=activity_step, is_completed=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        if request.method == 'POST':
+            return handle_post_request(request, activity, activity_step)
