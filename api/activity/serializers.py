@@ -20,10 +20,6 @@ class StepCompletionSerializer(serializers.ModelSerializer):
         read_only_fields = ('activity', 'activity_step', 'is_completed', 'created_on', 'updated_on', 'deleted_on')
 
 class ActivitySerializer(serializers.ModelSerializer):
-    step_completion = StepCompletionSerializer(source='stepcompletions', read_only=True)
-    log_submissions = LogSubmissionSerializer(source='logsubmissions', read_only=True)
-    file_submissions = FileSubmissionSerializer(source='filesubmissions', read_only=True)
-
     class Meta:
         model = Activity
         fields = '__all__'
