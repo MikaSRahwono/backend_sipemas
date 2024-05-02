@@ -22,10 +22,14 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
     all_approved = not application.applicationapproval_set.filter(is_approved=False).exists()
 
     if all_approved:
-        application.status = 'Approved'
+        application.is_approved = True
         application.save()
-        Activity.objects.create(
-            application=application,
-            type='Approval Completed',
-            description=f'All approvals received for {application}'
+        activity = Activity.objects.create(
+            topic = application.topic,
+            course = application.topic.course,
+            application=application
         )
+        activity.supervisee.add(application.user)
+        activity.supervisee.add(*application.applicants.all())
+        activity.supervisor.add(*application.topic.supervisors.all())
+        activity.save()

@@ -10,7 +10,7 @@ class Activity(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     application = models.OneToOneField(Application, on_delete=models.DO_NOTHING)
     supervisee = models.ManyToManyField(User, related_name='supervisee')
-    supervisor = models.ManyToManyField(User, related_name='supervisor')
+    supervisors = models.ManyToManyField(User, related_name='supervisors')
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     deleted_on = models.DateTimeField(blank=True, auto_now=False, null=True)

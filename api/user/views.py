@@ -1,5 +1,7 @@
 from django.shortcuts import render
 
+from api.activity.models import Activity
+from api.activity.serializers import ActivitySerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import *
@@ -339,3 +341,20 @@ class UserViewSet(viewsets.ModelViewSet):
                 
         except IntegrityError as e:
             return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=False, methods=['GET'], url_path='activities',  permission_classes=[IsAuthenticated])
+    def activities(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            if request.method == 'GET':
+                try:
+                    activity = Activity.objects.filter(supervisee=user)
+                    serializer = ActivitySerializer(activity, many=True)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                except Activity.DoesNotExist:
+                    return Response({'error': 'Activities does not exist'}, status=status.HTTP_404_NOT_FOUND)
+                
+        except IntegrityError as e:
+            return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
+
