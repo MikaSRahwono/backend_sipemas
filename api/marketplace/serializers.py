@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .models import *
-from ..user.serializers import UserDetailSerializer, UserProfileSerializer
+from ..user.serializers import UserDetailSerializer, UserProfileSerializer, UserSerializer
 from ..academic.serializers import CourseSerializer
 
 class TopicInformationSerializer(serializers.ModelSerializer):
@@ -33,9 +33,9 @@ class ApplicantsSerializer(serializers.ModelSerializer):
 
 class TopicListSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
-    fields = FieldSerializer(read_only=True,many=True)
-    supervisors = SupervisorSerializer(read_only=True,many=True)
-    creator = UserDetailSerializer(read_only=True)
+    fields = FieldSerializer(read_only=True, many=True)
+    supervisors = SupervisorSerializer(read_only=True, many=True)
+    creator = UserSerializer(read_only=True)
 
     class Meta:
         ordering = ['-id']
