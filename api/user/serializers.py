@@ -18,7 +18,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ['about', 'profile_image', 'line_id', 'linkedin_url', 'github_url', 'instagram_url', 'website_url','is_open', 'fields']
+        fields = ['about', 'profile_image', 'line_id', 'linkedin_url', 'github_url', 'instagram_url', 'website_url','is_open', 'fields', 'experiences']
 
     def create(self, validated_data):
         try:

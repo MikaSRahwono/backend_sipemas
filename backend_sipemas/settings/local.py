@@ -16,3 +16,14 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+DATABASES = {
+   'default': {
+       'ENGINE': 'django.db.backends.postgresql',
+       'NAME': 'postgres',
+       'USER': 'postgres',
+       'PASSWORD': 'admin',
+       'HOST': 'localhost',
+       'PORT': '5433',
+   }
+}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 
 from api.user.storage import ImageStorage
 from ..marketplace.models import Field
@@ -47,6 +48,7 @@ class UserProfile(models.Model):
     website_url = models.CharField(max_length=256, blank=True)
     is_open = models.BooleanField(default=True)
     fields = models.ManyToManyField(Field, related_name='field_of_interest', blank=True)
+    experiences = ArrayField(models.CharField(max_length=256, blank=True), default=list, blank=True)
 
 class Experience(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
