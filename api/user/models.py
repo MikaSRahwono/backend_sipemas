@@ -38,15 +38,15 @@ class UserDetail(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_profile')
-    name = models.CharField(max_length=256)
-    major = models.CharField(max_length=256)
     about = models.TextField(blank=True)
     profile_image = models.ImageField(upload_to='profile_imgs/', null=True, blank=True, storage=ImageStorage())
     line_id = models.CharField(max_length=256, blank=True)
     linkedin_url = models.CharField(max_length=256, blank=True)
     github_url = models.CharField(max_length=256, blank=True)
+    instagram_url = models.CharField(max_length=256, blank=True)
+    website_url = models.CharField(max_length=256, blank=True)
     is_open = models.BooleanField(default=True)
-    fields = models.ManyToManyField(Field, related_name='field_of_interest')
+    fields = models.ManyToManyField(Field, related_name='field_of_interest', blank=True)
 
 class Experience(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)

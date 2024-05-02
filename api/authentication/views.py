@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .utils import sso_api, get_faculty_info
 from .serializers import MyTokenObtainPairSerializer, RegisterSerializer
-from ..user.serializers import UserDetailSerializer
+from ..user.serializers import UserDetailSerializer, UserProfileSerializer
 from django.contrib.auth.models import User, Group
 
 class MyObtainTokenPairView(TokenObtainPairView):
@@ -52,13 +52,28 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                     'id_code': id_code
                 }
 
-                serializer = UserDetailSerializer(data=user_detail)
+                user_profile = {
+                    'about': '',
+                    'line_id': '',
+                    'linkedin_url': '',
+                    'github_url': '',
+                    'instagram_url': '',
+                    'website_url': '',
+                    'is_open': True,
+                    'github_url': '',
+                }
 
-                if serializer.is_valid():
+                detail_serializer = UserDetailSerializer(data=user_detail)
+                print(detail_serializer.is_valid())
+                profile_serializer = UserProfileSerializer(data=user_profile)
+                print(profile_serializer.is_valid())
+
+                if detail_serializer.is_valid() & profile_serializer.is_valid():
                     group = Group.objects.get(name='Student')
 
                     user.groups.add(group)
-                    serializer.save(user=user, organization=organization_class)
+                    detail_serializer.save(user=user, organization=organization_class)
+                    profile_serializer.save(user=user)
 
                     serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
                     serializer.is_valid(raise_exception=True)
@@ -68,7 +83,7 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
                     return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             elif sso_data['nama_role'] == 'dosen':
                 full_name =  sso_data['nama']
                 id_code =  sso_data['kodeidentitas']
@@ -80,12 +95,27 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                     'full_name': full_name,
                     'id_code': id_code
                 }
-                serializer = UserDetailSerializer(data=user_detail)
-                if serializer.is_valid():
+
+                user_profile = {
+                    'about': '',
+                    'line_id': '',
+                    'linkedin_url': '',
+                    'github_url': '',
+                    'instagram_url': '',
+                    'website_url': '',
+                    'is_open': True,
+                    'github_url': '',
+                }
+
+                detail_serializer = UserDetailSerializer(data=user_detail)
+                profile_serializer = UserProfileSerializer(data=user_profile)
+
+                if detail_serializer.is_valid() & profile_serializer.is_valid():
                     group = Group.objects.get(name='Lecturer')
 
                     user.groups.add(group)
-                    serializer.save(user=user)
+                    detail_serializer.save(user=user)
+                    profile_serializer.save(user=user)
 
                     serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
                     serializer.is_valid(raise_exception=True)
@@ -95,7 +125,7 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
                     return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 full_name =  sso_data['nama']
                 id_code =  sso_data['kodeidentitas']

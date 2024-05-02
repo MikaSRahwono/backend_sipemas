@@ -18,18 +18,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserProfile
-        fields = ['name', 'major', 'about', 'profile_image', 'line_id', 'linkedin_url', 'github_url', 'is_open', 'fields']
+        fields = ['about', 'profile_image', 'line_id', 'linkedin_url', 'github_url', 'instagram_url', 'website_url','is_open', 'fields']
 
     def create(self, validated_data):
-        fields = self.initial_data['fields']
-        fieldsInstances = []
-        
-        for field in fields:
-            fieldsInstances.append(Field.objects.get(id = field['id']))
-        user_profile = UserProfile.objects.create(**validated_data)
-        user_profile.fields.set(fieldsInstances)
+        try:
+            fields = self.initial_data['fields']
+            fieldsInstances = []
+            
+            for field in fields:
+                fieldsInstances.append(Field.objects.get(id = field['id']))
+            user_profile = UserProfile.objects.create(**validated_data)
+            user_profile.fields.set(fieldsInstances)
 
-        return user_profile
+            return user_profile
+        except:
+            return UserProfile.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
         try: 
@@ -48,7 +51,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
 class UserDetailSerializer(serializers.ModelSerializer):
     organization = OrganizationSerializer(read_only=True)
-    
+
     class Meta:
         model = UserDetail
         fields = ['full_name', 'id_code', 'email', 'role', 'is_external', 'organization']
