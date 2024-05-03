@@ -1,5 +1,7 @@
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver, Signal
+from django.db.models import Q
+
 from .models import Application
 from .models import ApplicationApproval
 from ..activity.models import Activity
@@ -19,7 +21,7 @@ application_approved_signal = Signal()
 @receiver(application_approved_signal)
 def handle_application_approved(sender, application_approval, user, **kwargs):
     application = application_approval.application
-    all_approved = not application.applicationapproval_set.filter(is_approved=False).exists()
+    all_approved = not application.applicationapproval_set.filter(Q(is_approved=False) | Q(is_approved__isnull=True)).exists()
 
     if all_approved:
         application.is_approved = True
@@ -31,5 +33,5 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         )
         activity.supervisee.add(application.user)
         activity.supervisee.add(*application.applicants.all())
-        activity.supervisor.add(*application.topic.supervisors.all())
+        activity.supervisors.add(*application.topic.supervisors.all())
         activity.save()
