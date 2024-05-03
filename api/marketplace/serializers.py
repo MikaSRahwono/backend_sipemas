@@ -98,14 +98,21 @@ class ApplicationSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_on', 'updated_on', 'topic', 'user')
 
     def create(self,validated_data):
-        applicants = self.initial_data['applicants']
-        applicantsInstances = []
-
-        if len(applicants) > 2:
-            raise ValidationError("More than 3 applicants are not allowed.")
+        topic = validated_data['topic']
+        allowed_organization_ids = [str(org.id) for org in topic.course.allowed_organizations.all()]
         
-        for applicant in applicants:
-            applicantsInstances.append(User.objects.get(id = applicant['id']))
+        applicants_data = self.initial_data['applicants']
+        if len(applicants_data) > 2:
+            raise ValidationError("More than 2 applicants are not allowed.")
+
+        applicantsInstances = []
+        for applicant_data in applicants_data:
+            applicant = User.objects.get(id=applicant_data['id'])
+            applicant_group_names = [group.name for group in applicant.groups.all()]
+            if not any(group_name in allowed_organization_ids for group_name in applicant_group_names):
+                raise ValidationError(f"Applicant with ID {applicant.id} does not belong to an allowed organization.")
+            applicantsInstances.append(applicant)
+            
         application = Application.objects.create(**validated_data)
         application.applicants.set(applicantsInstances)
 

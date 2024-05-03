@@ -9,6 +9,7 @@ app_name = 'user'
 router = DefaultRouter()
 router.register(r'all', UsersViewSet, basename='all')
 router.register(r'account', UserViewSet, basename='account')
+router.register(r'organizations', OrganizationViewSet, basename='organizations')
 
 urlpatterns = [
     path(r'', include(router.urls)),

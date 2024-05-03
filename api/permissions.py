@@ -77,3 +77,11 @@ class IsSecretary(BasePermission):
         if request.user.is_authenticated:
             return request.user.groups.filter(name='Secretary').exists()
         return False
+    
+class IsInAllowedOrganizationsTopic(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        course = obj.course
+        print(obj.course)
+        user_groups = request.user.groups.all()
+        print(user_groups)
+        return course.allowed_organizations.filter(id__in=user_groups).exists()

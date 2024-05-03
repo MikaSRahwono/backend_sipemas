@@ -26,6 +26,11 @@ from .filters import *
 class UserPagination(PageNumberPagination):
     page_size = 20
 
+class OrganizationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = OrganizationSerializer
+    model = Organization
+    queryset = Organization.objects.all()    
+
 class UsersViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'list':

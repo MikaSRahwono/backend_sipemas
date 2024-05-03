@@ -1,17 +1,10 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from api.user.models import Field
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import User
 
 from ..academic.models import Course
-
-class Field(models.Model):
-    name = models.CharField(max_length=256)
-    code = models.CharField(max_length=2)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return self.name
 
 class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)

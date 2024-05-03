@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from api.user.models import Organization
 from ckeditor.fields import RichTextField
 
 class Course(models.Model):
@@ -16,6 +17,7 @@ class Course(models.Model):
     )
     is_allowed_new_topic = models.BooleanField()
     topic_count = models.IntegerField(default=0)
+    allowed_organizations = models.ManyToManyField(Organization, related_name='prodi')
 
     class Meta:
         verbose_name_plural = 'courses'

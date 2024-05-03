@@ -1,3 +1,4 @@
+from api.user.serializers import OrganizationSerializer
 from rest_framework import serializers
 from .models import *
 
@@ -13,10 +14,37 @@ class PrerequisiteSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     prerequisites = PrerequisiteSerializer(many=True, read_only=True)
+    allowed_organizations = OrganizationSerializer(read_only=True, many=True)
+
     class Meta:
         model = Course
         fields = '__all__'
         read_only_fields = ('kd_mk',)
+
+    def create(self,validated_data):
+        allowed_organizations = self.initial_data['allowed_organizations']
+        organizationInstances = []
+        
+        for organization in allowed_organizations:
+            organizationInstances.append(Organization.objects.get(id = organization['id']))
+        course = Course.objects.create(**validated_data)
+        course.allowed_organizations.set(organizationInstances)
+        
+        return course
+    
+    def update(self, instance, validated_data):
+        allowed_organizations = self.initial_data['allowed_organizations']
+        organizationInstances = []
+        
+        for organization in allowed_organizations:
+            organizationInstances.append(Organization.objects.get(id = organization['id']))
+        instance.allowed_organizations.set(organizationInstances) 
+
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+        instance.save()
+        return instance
+
 
 class InformationComponentSerializer(serializers.ModelSerializer):
     class Meta:

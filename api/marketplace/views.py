@@ -1,5 +1,6 @@
 from django.db import IntegrityError
 from django.shortcuts import render
+from django.db.models import Q
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -27,6 +28,15 @@ class TopicPagination(PageNumberPagination):
     page_size = 10
 
 class TopicViewSet(viewsets.ModelViewSet):
+
+    serializer_class = TopicListSerializer
+    pagination_class = TopicPagination
+    model = Topic
+    queryset = Topic.objects.all()
+    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = TopicFilter
+    ordering_fields = ['title', 'created_on'] 
+
     def get_serializer_class(self):
         if self.action == 'list':
             return TopicListSerializer
@@ -38,7 +48,7 @@ class TopicViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy', 'information']:
             if self.request.method == 'GET':
-                return [ReadOnlyOrAdmin()]
+                return [IsAuthenticated()]
             else:
                 return [IsLecturer()]
         elif self.action in ['apply', 'request']:
@@ -52,14 +62,6 @@ class TopicViewSet(viewsets.ModelViewSet):
             return Topic.objects.get(pk = pk)
         except:
             raise ValidationError({'msg':'Topic Does not exist'})
-    
-    serializer_class = TopicListSerializer
-    pagination_class = TopicPagination
-    model = Topic
-    queryset = Topic.objects.all()
-    filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
-    filterset_class = TopicFilter
-    ordering_fields = ['title', 'created_on'] 
 
     def retrieve(self, request, pk):
         topic = self.get_object(pk)
@@ -138,12 +140,17 @@ class TopicViewSet(viewsets.ModelViewSet):
             topic = self.get_object(pk=pk)
             user = self.request.user
             
+            allowed_organization_ids = [str(org.id) for org in topic.course.allowed_organizations.all()]
+            user_group_names = [group.name for group in user.groups.all()]
+
+            if not any(group_name in allowed_organization_ids for group_name in user_group_names):
+                return Response({"error": "Your study program are allowed for this topic"}, status=status.HTTP_403_FORBIDDEN)
+
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
                 application = serializer.save(topic=topic, user=user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
         except Topic.DoesNotExist:
                 return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
         

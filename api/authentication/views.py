@@ -38,7 +38,6 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             email = f'{username}@ui.ac.id'
             user = User.objects.create_user(username=username, password=password, email=email)
             if sso_data['nama_role'] == 'mahasiswa':
-                print(sso_data)
                 prodi  = sso_data['kode_org'].split(":")[0]
                 full_name =  sso_data['nama']
                 id_code =  sso_data['kodeidentitas']
@@ -64,14 +63,14 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 }
 
                 detail_serializer = UserDetailSerializer(data=user_detail)
-                print(detail_serializer.is_valid())
                 profile_serializer = UserProfileSerializer(data=user_profile)
-                print(profile_serializer.is_valid())
 
                 if detail_serializer.is_valid() & profile_serializer.is_valid():
                     group = Group.objects.get(name='Student')
+                    org = Group.objects.get(name=prodi)
 
                     user.groups.add(group)
+                    user.groups.add(org)
                     detail_serializer.save(user=user, organization=organization_class)
                     profile_serializer.save(user=user)
 

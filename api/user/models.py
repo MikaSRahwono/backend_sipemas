@@ -3,8 +3,15 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 
 from api.user.storage import ImageStorage
-from ..marketplace.models import Field
 from django.utils.translation import gettext_lazy as _
+
+class Field(models.Model):
+    name = models.CharField(max_length=256)
+    code = models.CharField(max_length=2)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
 
 class Organization(models.Model):
     class Faculty(models.TextChoices):
