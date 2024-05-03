@@ -56,6 +56,7 @@ class TopicRequest(models.Model):
     fields = models.ManyToManyField(Field)
     supervisors = models.ManyToManyField(User, related_name='topic_request_supervisors')
     applicants = models.ManyToManyField(User, related_name='topic_request_applicants')
+    description = models.TextField(null=True)
 
 class TopicRequestApproval(models.Model):
     topic_request = models.ForeignKey(TopicRequest, on_delete=models.CASCADE)
