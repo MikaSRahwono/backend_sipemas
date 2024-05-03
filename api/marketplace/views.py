@@ -242,6 +242,22 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
         application_approved_signal.send(sender=ApplicationApproval, application_approval=application_approval, user=user)
         
         return Response({'message': 'Application Approved'}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['PATCH'], url_path='decline', permission_classes=[IsAuthenticated])
+    def decline(self, request, pk=None):
+        application_approval = self.get_object(pk)
+        user = request.user
+
+        if application_approval.approvee != user:
+            return Response({'error': "You don't have permission to decline"}, status=status.HTTP_403_FORBIDDEN)
+
+        if application_approval.is_approved:
+            return Response({'message': 'Application already declined'}, status=status.HTTP_200_OK)
+
+        application_approval.is_approved = False
+        application_approval.save()
+        
+        return Response({'message': 'Application Declined'}, status=status.HTTP_200_OK)
         
 class TopicRequestViewSet(viewsets.ModelViewSet):
     permission_classes = (IsSecretary,)
@@ -303,3 +319,19 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
         topic_request_approved_signal.send(sender=TopicRequestApproval, topic_request_approval=topic_approval, user=user)
         
         return Response({'message': 'Topic Request Approved'}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['PATCH'], url_path='decline', permission_classes=[IsAuthenticated])
+    def decline(self, request, pk=None):
+        topic_approval = self.get_object(pk)
+        user = request.user
+
+        if topic_approval.approvee != user:
+            return Response({'error': "You don't have permission to decline"}, status=status.HTTP_403_FORBIDDEN)
+
+        if topic_approval.is_approved:
+            return Response({'message': 'Topic Request already declined'}, status=status.HTTP_200_OK)
+
+        topic_approval.is_approved = False
+        topic_approval.save()
+        
+        return Response({'message': 'Topic Request Declined'}, status=status.HTTP_200_OK)
