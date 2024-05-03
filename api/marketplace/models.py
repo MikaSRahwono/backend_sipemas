@@ -55,12 +55,13 @@ class TopicRequest(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     fields = models.ManyToManyField(Field)
-    supervisors = models.ManyToManyField(User)
+    supervisors = models.ManyToManyField(User, related_name='topic_request_supervisors')
+    applicants = models.ManyToManyField(User, related_name='topic_request_applicants')
 
 class TopicRequestApproval(models.Model):
-    application = models.ForeignKey(Application, on_delete=models.CASCADE)
+    topic_request = models.ForeignKey(TopicRequest, on_delete=models.CASCADE)
     approvee = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(null=True)
     is_supervisor = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)

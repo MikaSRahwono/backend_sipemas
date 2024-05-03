@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import IntegrityError
 import django_filters
 
-from api.marketplace.serializers import ApplicationApprovalSerializer, ApplicationSerializer, TopicListSerializer, TopicRequestSerializer
+from api.marketplace.serializers import ApplicationApprovalSerializer, ApplicationSerializer, TopicListSerializer, TopicRequestApprovalSerializer, TopicRequestSerializer
 from api.permissions import IsAdminOrIsSelf, IsAdmin, IsLecturer, IsSelf
 
 from .models import *
@@ -296,8 +296,8 @@ class UserViewSet(viewsets.ModelViewSet):
             except UserDetail.DoesNotExist:
                 return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=['GET', 'PUT'], url_path='approvals', permission_classes=[IsAuthenticated])
-    def approvals(self, request):
+    @action(detail=False, methods=['GET', 'PUT'], url_path='application_approvals', permission_classes=[IsAuthenticated])
+    def application_approvals(self, request):
         user = self.request.user
 
         if request.method == 'GET':
@@ -316,8 +316,54 @@ class UserViewSet(viewsets.ModelViewSet):
                     serializer.save()
                     return Response(serializer.data)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except UserDetail.DoesNotExist:
+            except ApplicationApproval.DoesNotExist:
                 return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['GET', 'PUT'], url_path='topic_requests', permission_classes=[IsAuthenticated])
+    def topic_requests(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                topic_request = TopicRequest.objects.filter(user=user)
+                serializer = TopicRequestSerializer(topic_request, many=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except TopicRequest.DoesNotExist:
+                return Response({'error': 'TopicRequest does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                topic_request = TopicRequest.objects.get(user=user)
+                serializer = TopicRequestSerializer(topic_request, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except TopicRequest.DoesNotExist:
+                return Response({'error': 'TopicRequest does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['GET', 'PUT'], url_path='topic_request_approvals', permission_classes=[IsAuthenticated])
+    def topic_request_approvals(self, request):
+        user = self.request.user
+
+        if request.method == 'GET':
+            try:
+                approval = TopicRequestApproval.objects.filter(approvee=user)
+                serializer = TopicRequestApprovalSerializer(approval, many=True)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except TopicRequestApproval.DoesNotExist:
+                return Response({'error': 'TopicRequestApproval does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        elif request.method == 'PUT':
+            try:
+                approval = TopicRequestApproval.objects.get(approvee=user)
+                serializer = TopicRequestApprovalSerializer(approval, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except TopicRequestApproval.DoesNotExist:
+                return Response({'error': 'TopicRequestApproval does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'], url_path='created-topics', permission_classes=[IsLecturer])
     def created_topics(self, request):

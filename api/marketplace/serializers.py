@@ -15,6 +15,14 @@ class FieldSerializer(serializers.ModelSerializer):
         model = Field
         fields = '__all__'
 
+class SuperviseeSerializer(serializers.ModelSerializer):
+    user_detail = UserDetailSerializer(read_only=True)
+    user_profile = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_detail', 'user_profile']
+
 class SupervisorSerializer(serializers.ModelSerializer):
     user_detail = UserDetailSerializer(read_only=True)
     user_profile = UserProfileSerializer(read_only=True)
@@ -128,7 +136,8 @@ class TopicRequestSerializer(serializers.ModelSerializer):
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
     fields = FieldSerializer(read_only=True,many=True)
     supervisors = SupervisorSerializer(read_only=True,many=True)
-    creator = UserDetailSerializer(read_only=True)
+    applicants = SuperviseeSerializer(read_only=True,many=True)
+    creator = UserSerializer(read_only=True)
 
     class Meta:
         ordering = ['-id']
@@ -136,12 +145,29 @@ class TopicRequestSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self,validated_data):
+        course = validated_data['course']
+        allowed_organization_ids = [str(org.id) for org in course.allowed_organizations.all()]
+
+        applicants = self.initial_data['applicants']
+        if len(applicants) > 2:
+            raise ValidationError("More than 2 applicants are not allowed.")
+
+        applicantsInstances = []
+        for applicant_data in applicants:
+            applicant = User.objects.get(id=applicant_data['id'])
+            applicant_group_names = [group.name for group in applicant.groups.all()]
+            if not any(group_name in allowed_organization_ids for group_name in applicant_group_names):
+                raise ValidationError(f"Applicant with ID {applicant.id} does not belong to an allowed organization.")
+            applicantsInstances.append(applicant)
+
+        topic_request = TopicRequest.objects.create(**validated_data)
+        topic_request.applicants.set(applicantsInstances)
+
         fields = self.initial_data['fields']
         fieldsInstances = []
         
         for field in fields:
             fieldsInstances.append(Field.objects.get(id = field['id']))
-        topic_request = TopicRequest.objects.create(**validated_data)
         topic_request.fields.set(fieldsInstances)
         
         supervisors = self.initial_data['supervisors']

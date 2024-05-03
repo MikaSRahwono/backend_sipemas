@@ -9,4 +9,7 @@ admin.register(
     Field,
     TopicInformation,
     Application,
-    ApplicationApproval)(admin.ModelAdmin)
+    ApplicationApproval,
+    TopicRequest,
+    TopicRequestApproval,
+    )(admin.ModelAdmin)
