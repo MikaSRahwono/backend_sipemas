@@ -1,0 +1,11 @@
+Django==5.0.3
+django_ckeditor==6.7.0
+django_rest_swagger==2.2.0
+djangorestframework==3.14.0
+djangorestframework_simplejwt==5.3.1
+drf_nested_routers==0.93.5
+drf_yasg==1.21.7
+Requests==2.31.0
+django-filter==24.1
+pillow==10.2.0
+django-cors-headers==4.3.1
