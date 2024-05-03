@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from api.permissions import IsAdmin, IsSecretary, ReadOnlyOrAdmin, IsLecturer
 
-from .signals import application_approved_signal
+from .signals import application_approved_signal, topic_request_approved_signal
 
 import django_filters
 
@@ -266,9 +266,9 @@ class TopicRequestViewSet(viewsets.ModelViewSet):
 
 class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
     permission_classes = (IsSecretary,)
-    serializer_class = ApplicationApprovalSerializer
-    model = ApplicationApproval
-    queryset = ApplicationApproval.objects.all()
+    serializer_class = TopicRequestApprovalSerializer
+    model = TopicRequestApproval
+    queryset = TopicRequestApproval.objects.all()
     filter_backends = [OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     ordering_fields = ['created_on']
 
@@ -282,22 +282,24 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
 
     def get_object(self, pk):
         try:
-            return ApplicationApproval.objects.get(pk = pk)
+            return TopicRequestApproval.objects.get(pk = pk)
         except:
-            raise ValidationError({'msg':'Application Approval Does not exist'})
+            raise ValidationError({'msg':'Topic Request Approval Does not exist'})
 
     @action(detail=True, methods=['PATCH'], url_path='approve', permission_classes=[IsAuthenticated])
     def approve(self, request, pk=None):
-        try:
-            application_approval = self.get_object(pk=pk)
-            user = self.request.user
-            if application_approval.approvee == user:
-                if application_approval.is_approved == True:
-                    return Response({'message': 'Application AlreadyApproved'}, status=status.HTTP_200_OK)
-                application_approval.is_approved = not application_approval.is_approved
-                application_approval.save()
-                return Response({'message': 'Application Approved'}, status=status.HTTP_200_OK)
-            else:
-                return Response({'error': "You don't have permission to approve"}, status=status.HTTP_404_NOT_FOUND)
-        except ApplicationApproval.DoesNotExist:
-            return Response({'error': 'Application does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        topic_approval = self.get_object(pk)
+        user = request.user
+
+        if topic_approval.approvee != user:
+            return Response({'error': "You don't have permission to approve"}, status=status.HTTP_403_FORBIDDEN)
+
+        if topic_approval.is_approved:
+            return Response({'message': 'Topic Request already approved'}, status=status.HTTP_200_OK)
+
+        topic_approval.is_approved = True
+        topic_approval.save()
+
+        topic_request_approved_signal.send(sender=TopicRequestApproval, topic_request_approval=topic_approval, user=user)
+        
+        return Response({'message': 'Topic Request Approved'}, status=status.HTTP_200_OK)

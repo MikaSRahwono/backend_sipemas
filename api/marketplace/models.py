@@ -49,7 +49,6 @@ class ApplicationApproval(models.Model):
 class TopicRequest(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=256)
-    is_open = models.BooleanField(default=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='topic_request_creator')
     num_of_people = models.IntegerField()
     created_on = models.DateTimeField(auto_now_add=True)

@@ -3,12 +3,13 @@ from django.db import models
 from api.activity.storage import FileStorage
 from api.user.models import User
 from api.academic.models import ActivityStep, AssignmentComponent, Course
-from api.marketplace.models import Topic, Application
+from api.marketplace.models import Topic, Application, TopicRequest
 
 class Activity(models.Model):        
     topic = models.OneToOneField(Topic, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    application = models.OneToOneField(Application, on_delete=models.DO_NOTHING)
+    application = models.OneToOneField(Application, on_delete=models.DO_NOTHING, null=True)
+    topic_request = models.OneToOneField(TopicRequest, on_delete=models.DO_NOTHING, null=True)
     supervisee = models.ManyToManyField(User, related_name='supervisee')
     supervisors = models.ManyToManyField(User, related_name='supervisors')
     created_on = models.DateTimeField(auto_now_add=True)

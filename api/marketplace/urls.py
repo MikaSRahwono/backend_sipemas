@@ -9,7 +9,8 @@ app_name = 'marketplace'
 router = DefaultRouter()
 router.register(r'topics', TopicViewSet, basename='topics')
 router.register(r'applications', ApplicationsViewSet, basename='applications')
-router.register(r'approvals', ApplicationApprovalViewSet, basename='approvals')
+router.register(r'application_approvals', ApplicationApprovalViewSet, basename='application_approvals')
+router.register(r'topic_request_approvals', TopicRequestApprovalViewSet, basename='topic_approvals')
 
 
 urlpatterns = [
