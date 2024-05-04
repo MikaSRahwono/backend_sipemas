@@ -4,7 +4,7 @@ from .views import *
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
 
-app_name = 'academic'
+app_name = 'activity'
 
 router = DefaultRouter()
 router.register(r'', ActivityViewSet, basename='activity')

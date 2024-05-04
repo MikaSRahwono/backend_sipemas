@@ -5,5 +5,5 @@ urlpatterns = [
     path('marketplace/', include(('api.marketplace.urls', 'marketplace'), namespace='marketplace')),
     path('authentication/', include(('api.authentication.urls', 'authentication'), namespace='authentication')),
     path('users/', include(('api.user.urls', 'user'), namespace='user')),
-    path('activity/', include(('api.activity.urls', 'activity'), namespace='activity')),
+    path('activities/', include(('api.activity.urls', 'activity'), namespace='activities')),
 ]
