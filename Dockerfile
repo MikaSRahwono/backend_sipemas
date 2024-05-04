@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.11.8
 RUN apt-get update -qq && apt-get install -y -qq \
     gdal-bin binutils libproj-dev libgdal-dev cmake &&\
     apt-get clean all &&\
