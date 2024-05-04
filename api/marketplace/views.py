@@ -46,7 +46,7 @@ class TopicViewSet(viewsets.ModelViewSet):
             return super().get_serializer_class()
         
     def get_permissions(self):
-        if self.action in ['create', 'update', 'destroy', 'information']:
+        if self.action in ['create', 'update', 'destroy']:
             if self.request.method == 'GET':
                 return [IsAuthenticated()]
             else:
