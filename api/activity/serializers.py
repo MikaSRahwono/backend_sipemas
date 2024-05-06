@@ -1,4 +1,4 @@
-from api.marketplace.serializers import SupervisorSerializer, UserDetailSerializer, UserProfileSerializer
+from api.marketplace.serializers import SupervisorSerializer, TopicListSerializer, UserDetailSerializer, UserProfileSerializer
 from rest_framework import serializers
 from .models import *
 
@@ -35,6 +35,8 @@ class ActivitySerializer(serializers.ModelSerializer):
 
     supervisors = SupervisorSerializer(read_only=True, many=True)
     supervisees = SuperviseesSerializer(read_only=True, many=True)
+
+    topic = TopicListSerializer(read_only=True)
 
     class Meta:
         model = Activity
