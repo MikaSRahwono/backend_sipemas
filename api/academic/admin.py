@@ -1,7 +1,16 @@
 from django.contrib import admin
-from .models import Course, CourseInformation, Prerequisite
+from .models import *
 
 admin.register(
     CourseInformation,
     Course,
-    Prerequisite,)
+    Prerequisite,
+    ActivityStep,
+    StepInformation,
+    StepSidang,
+    StepAssignment,
+    StepComponent,
+    InformationComponent,
+    AnnouncementComponent,
+    AssignmentComponent
+    )
