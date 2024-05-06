@@ -3,14 +3,12 @@ from .models import *
 
 admin.register(
     CourseInformation,
-    Course,
     Prerequisite,
-    ActivityStep,
     StepInformation,
     StepSidang,
     StepAssignment,
     StepComponent,
     InformationComponent,
     AnnouncementComponent,
-    AssignmentComponent
-    )
+    AssignmentComponent,
+    )(admin.ModelAdmin)
