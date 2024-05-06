@@ -395,7 +395,7 @@ class UserViewSet(viewsets.ModelViewSet):
             
             if request.method == 'GET':
                 try:
-                    activity = Activity.objects.filter(supervisee=user)
+                    activity = Activity.objects.filter(supervisees=user)
                     serializer = ActivitySerializer(activity, many=True)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 except Activity.DoesNotExist:
