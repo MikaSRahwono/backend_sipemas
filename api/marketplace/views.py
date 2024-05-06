@@ -160,6 +160,15 @@ class TopicViewSet(viewsets.ModelViewSet):
                 user = self.request.user
                 
                 serializer = TopicRequestSerializer(data=request.data)
+
+                course = Course.objects.get(kd_mk=request.data['course'])
+
+                allowed_organization_ids = [str(org.id) for org in course.allowed_organizations.all()]
+                user_group_names = [group.name for group in user.groups.all()]
+
+                if not any(group_name in allowed_organization_ids for group_name in user_group_names):
+                    return Response({"error": "Your study program are allowed for this topic"}, status=status.HTTP_403_FORBIDDEN)
+                
                 if serializer.is_valid():
                     serializer.save(creator=user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
