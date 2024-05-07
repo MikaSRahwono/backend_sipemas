@@ -48,13 +48,24 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['POST'], url_path='assignment_components/(?P<assignment_component_id>\d+)/log_submissions', permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['POST', 'GET'], url_path='assignment_components/(?P<assignment_component_id>\d+)/log_submissions', permission_classes=[IsAuthenticated])
     def create_log_submission(self, request, pk=None, assignment_component_id=None):
         activity, assignment_component = self.get_activity_and_component(pk, assignment_component_id)
 
         if not self.user_is_related(self.request.user, activity):
             return Response({'error': 'You do not have permission to perform this action'}, status=status.HTTP_403_FORBIDDEN)
 
+        def handle_get_request(self, request, activity, assignment_component):
+            try:
+                if assignment_component.type != "LOG":
+                    return Response({'error': 'Must be compatible with the assignment type'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                log_submission = LogSubmission.objects.filter(activity=activity, assignment_component=assignment_component)
+                serializer = LogSubmissionSerializer(log_submission, context={'request': self.request}, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except LogSubmission.DoesNotExist:
+                return Response({'error': 'Log Submission does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
         def handle_post_request(self, request, activity, assignment_component):
             if assignment_component.type != "LOG":
                 return Response({'error': 'Must be compatible with the assignment type'}, status=status.HTTP_400_BAD_REQUEST)
@@ -64,10 +75,13 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
                 serializer.save(activity=activity, assignment_component=assignment_component)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        return handle_post_request(self, request, activity, assignment_component)
+        
+        if request.method == 'GET':
+            return handle_get_request(self, request, activity, assignment_component)
+        elif request.method == 'POST':
+            return handle_post_request(self, request, activity, assignment_component)
     
-    @action(detail=True, methods=['POST', 'PUT'], url_path='assignment_components/(?P<assignment_component_id>\d+)/log_submission/(?P<log_submission_id>\d+)', permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['PUT'], url_path='assignment_components/(?P<assignment_component_id>\d+)/log_submissions/(?P<log_submission_id>\d+)', permission_classes=[IsAuthenticated])
     def edit_log_submission(self, request, pk=None, assignment_component_id=None, log_submission_id=None):
         activity, assignment_component = self.get_activity_and_component(pk, assignment_component_id)
 
@@ -87,12 +101,23 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
             
         return handle_put_request(self, request, log_submission_id)
         
-    @action(detail=True, methods=['POST', 'PUT'], url_path='assignment_components/(?P<assignment_component_id>\d+)/file_submission', permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['POST', 'GET'], url_path='assignment_components/(?P<assignment_component_id>\d+)/file_submissions', permission_classes=[IsAuthenticated])
     def create_file_submission(self, request, pk=None, assignment_component_id=None):
         activity, assignment_component = self.get_activity_and_component(pk, assignment_component_id)
 
         if not self.user_is_related(request.user, activity):
             return Response({'error': 'You do not have permission to perform this action'}, status=status.HTTP_403_FORBIDDEN)
+        
+        def handle_get_request(self, request, activity, assignment_component):
+            try:
+                if assignment_component.type != "SUB":
+                    return Response({'error': 'Must be compatible with the assignment type'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                file_submission = FileSubmission.objects.filter(activity=activity, assignment_component=assignment_component)[0]
+                serializer = FileSubmissionSerializer(file_submission, context={'request': self.request})
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except FileSubmission.DoesNotExist:
+                return Response({'error': 'File Submission does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
         def handle_post_request(self, request, activity, assignment_component):
             if assignment_component.type != "SUB":
@@ -104,9 +129,13 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return handle_post_request(self, request, activity, assignment_component)
+        if request.method == 'GET':
+            return handle_get_request(self, request, activity, assignment_component)
+        elif request.method == 'POST':
+            return handle_post_request(self, request, activity, assignment_component)
         
-    @action(detail=True, methods=['POST', 'PUT'], url_path='assignment_components/(?P<assignment_component_id>\d+)/file_submission/(?P<file_submission_id>\d+)', permission_classes=[IsAuthenticated])
+        
+    @action(detail=True, methods=['PUT'], url_path='assignment_components/(?P<assignment_component_id>\d+)/file_submissions/(?P<file_submission_id>\d+)', permission_classes=[IsAuthenticated])
     def edit_file_submission(self, request, pk=None, assignment_component_id=None, file_submission_id=None):
         activity, assignment_component = self.get_activity_and_component(pk, assignment_component_id)
 

@@ -27,13 +27,16 @@ class LogSubmission(models.Model):
 
 class FileSubmission(models.Model):        
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='filesubmissions')
-    assignment_component = models.OneToOneField(AssignmentComponent, on_delete=models.DO_NOTHING)
+    assignment_component = models.ForeignKey(AssignmentComponent, on_delete=models.DO_NOTHING)
     subject = models.CharField(max_length=256, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
     file = models.FileField(upload_to='assignments/', null=False, blank=False, storage=FileStorage(), max_length=1000)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     deleted_on = models.DateTimeField(blank=True, auto_now=False, null=True)
+
+    class Meta:
+        unique_together = ('assignment_component', 'activity')
 
 class StepCompletion(models.Model):        
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='stepcompletions')
