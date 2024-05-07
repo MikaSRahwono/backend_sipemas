@@ -191,13 +191,13 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 user_profile = UserProfile.objects.get(user=user)
-                serializer = UserProfileSerializer(user_profile)
+                serializer = UserProfileSerializer(user_profile, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except UserProfile.DoesNotExist:
                 return Response({'error': 'User profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
         elif request.method == 'POST':
-            serializer = UserProfileSerializer(data=request.data)
+            serializer = UserProfileSerializer(data=request.data, context={'request': self.request})
             if serializer.is_valid():
                 try:
                     serializer.save(user=user)
@@ -224,14 +224,14 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 user_detail = UserDetail.objects.get(user=user)
-                serializer = UserDetailSerializer(user_detail)
+                serializer = UserDetailSerializer(user_detail, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except UserDetail.DoesNotExist:
                 return Response({'error': 'User detail does not exist'}, status=status.HTTP_404_NOT_FOUND)
         
         elif request.method == 'POST':
             try:
-                serializer = UserDetailSerializer(data=request.data)
+                serializer = UserDetailSerializer(data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save(user=user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -242,7 +242,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif request.method == 'PUT':
             try:
                 user_detail = UserDetail.objects.get(user=user)
-                serializer = UserDetailSerializer(user_detail, data=request.data)
+                serializer = UserDetailSerializer(user_detail, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -262,7 +262,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def update_picture(self, request):
         user = self.request.user
         user_profile = UserProfile.objects.get(user=user)
-        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True, context={'request': self.request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -275,7 +275,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 applications = Application.objects.filter(user=user)
-                serializer = ApplicationSerializer(applications, many=True)
+                serializer = ApplicationSerializer(applications, many=True, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Application.DoesNotExist:
                 return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -283,7 +283,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif request.method == 'PUT':
             try:
                 application = Application.objects.get(user=user)
-                serializer = ApplicationSerializer(application, data=request.data)
+                serializer = ApplicationSerializer(application, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -298,7 +298,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 approval = ApplicationApproval.objects.filter(approvee=user)
-                serializer = ApplicationApprovalSerializer(approval, many=True)
+                serializer = ApplicationApprovalSerializer(approval, many=True, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Application.DoesNotExist:
                 return Response({'error': 'Applications does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -306,7 +306,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif request.method == 'PUT':
             try:
                 approval = ApplicationApproval.objects.get(approvee=user)
-                serializer = ApplicationApprovalSerializer(approval, data=request.data)
+                serializer = ApplicationApprovalSerializer(approval, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -321,7 +321,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 topic_request = TopicRequest.objects.filter(user=user)
-                serializer = TopicRequestSerializer(topic_request, many=True)
+                serializer = TopicRequestSerializer(topic_request, many=True, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except TopicRequest.DoesNotExist:
                 return Response({'error': 'TopicRequest does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -329,7 +329,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif request.method == 'PUT':
             try:
                 topic_request = TopicRequest.objects.get(user=user)
-                serializer = TopicRequestSerializer(topic_request, data=request.data)
+                serializer = TopicRequestSerializer(topic_request, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -344,7 +344,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 approval = TopicRequestApproval.objects.filter(approvee=user)
-                serializer = TopicRequestApprovalSerializer(approval, many=True)
+                serializer = TopicRequestApprovalSerializer(approval, many=True, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except TopicRequestApproval.DoesNotExist:
                 return Response({'error': 'TopicRequestApproval does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -352,7 +352,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif request.method == 'PUT':
             try:
                 approval = TopicRequestApproval.objects.get(approvee=user)
-                serializer = TopicRequestApprovalSerializer(approval, data=request.data)
+                serializer = TopicRequestApprovalSerializer(approval, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -367,7 +367,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             try:
                 topic = Topic.objects.filter(creator=user)
-                serializer = TopicListSerializer(topic, many=True)
+                serializer = TopicListSerializer(topic, many=True, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Application.DoesNotExist:
                 return Response({'error': 'Topic does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -380,7 +380,7 @@ class UserViewSet(viewsets.ModelViewSet):
             if request.method == 'GET':
                 try:
                     topic_requests = TopicRequest.objects.filter(creator=user)
-                    serializer = TopicRequestSerializer(topic_requests, many=True)
+                    serializer = TopicRequestSerializer(topic_requests, many=True, context={'request': self.request})
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 except TopicRequest.DoesNotExist:
                     return Response({'error': 'Topic Request does not exist'}, status=status.HTTP_404_NOT_FOUND)
@@ -396,7 +396,7 @@ class UserViewSet(viewsets.ModelViewSet):
             if request.method == 'GET':
                 try:
                     activity = Activity.objects.filter(supervisees=user)
-                    serializer = ActivitySerializer(activity, many=True)
+                    serializer = ActivitySerializer(activity, many=True, context={'request': self.request})
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 except Activity.DoesNotExist:
                     return Response({'error': 'Activities does not exist'}, status=status.HTTP_404_NOT_FOUND)

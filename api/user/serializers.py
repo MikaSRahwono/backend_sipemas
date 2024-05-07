@@ -15,10 +15,17 @@ class UserFieldSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     fields = UserFieldSerializer(read_only=True,many=True)
+    profile_image = serializers.SerializerMethodField()
     
     class Meta:
         model = UserProfile
         fields = ['about', 'profile_image', 'line_id', 'linkedin_url', 'github_url', 'instagram_url', 'website_url','is_open', 'fields', 'experiences']
+
+    def get_profile_image(self, obj):
+        request = self.context.get('request')
+        if obj.profile_image and request:
+            return request.build_absolute_uri(obj.profile_image.url)
+        return None
 
     def create(self, validated_data):
         try:

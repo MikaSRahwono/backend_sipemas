@@ -59,7 +59,7 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
             if assignment_component.type != "LOG":
                 return Response({'error': 'Must be compatible with the assignment type'}, status=status.HTTP_400_BAD_REQUEST)
             
-            serializer = LogSubmissionSerializer(data=request.data)
+            serializer = LogSubmissionSerializer(data=request.data, context={'request': self.request})
             if serializer.is_valid():
                 serializer.save(activity=activity, assignment_component=assignment_component)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -77,7 +77,7 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
         def handle_put_request(self, request, log_submission_id):
             try:
                 log_submission = LogSubmission.objects.get(id=log_submission_id)
-                serializer = LogSubmissionSerializer(log_submission, data=request.data)
+                serializer = LogSubmissionSerializer(log_submission, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -98,7 +98,7 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
             if assignment_component.type != "SUB":
                 return Response({'error': 'Must be compatible with the assignment type'}, status=status.HTTP_400_BAD_REQUEST)
             
-            serializer = FileSubmissionSerializer(data=request.data)
+            serializer = FileSubmissionSerializer(data=request.data, context={'request': self.request})
             if serializer.is_valid():
                 serializer.save(activity=activity, assignment_component=assignment_component)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -116,7 +116,7 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
         def handle_put_request(self, request, file_submission_id):
             try:
                 file_submission = FileSubmission.objects.get(id=file_submission_id)
-                serializer = FileSubmissionSerializer(file_submission, data=request.data)
+                serializer = FileSubmissionSerializer(file_submission, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
@@ -134,7 +134,7 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
             return Response({'error': 'You do not have permission to perform this action'}, status=status.HTTP_403_FORBIDDEN)
 
         def handle_post_request(self, request, activity, activity_step):
-            serializer = StepCompletionSerializer(data=request.data)
+            serializer = StepCompletionSerializer(data=request.data, context={'request': self.request})
             if serializer.is_valid():
                 serializer.save(activity=activity, activity_step=activity_step, is_completed=True)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)

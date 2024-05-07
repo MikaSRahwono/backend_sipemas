@@ -65,13 +65,13 @@ class TopicViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk):
         topic = self.get_object(pk)
-        serializer = TopicDetailSerializer(topic)
+        serializer = TopicDetailSerializer(topic, context={'request': self.request})
         return Response(serializer.data)
     
     def create(self, request, *args, **kwargs):
         user = self.request.user
 
-        serializer = TopicListSerializer(data = request.data)
+        serializer = TopicListSerializer(data = request.data, context={'request': self.request})
         if serializer.is_valid():
             serializer.save(creator=user)
             return Response(serializer.data)
@@ -84,7 +84,7 @@ class TopicViewSet(viewsets.ModelViewSet):
         if topic.creator != user:
             return Response({"error": "You don't have permission to change this topic"}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = TopicListSerializer(topic, data = request.data)
+        serializer = TopicListSerializer(topic, data = request.data, context={'request': self.request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -108,7 +108,7 @@ class TopicViewSet(viewsets.ModelViewSet):
                     if topic.creator != user:
                         return Response({"error": "You don't have permission to change this topic"}, status=status.HTTP_404_NOT_FOUND)
         
-                    serializer = TopicInformationSerializer(data=request.data)
+                    serializer = TopicInformationSerializer(data=request.data, context={'request': self.request})
                     if serializer.is_valid():
                         serializer.save(topic=topic)
                         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -123,7 +123,7 @@ class TopicViewSet(viewsets.ModelViewSet):
                         return Response({"error": "You don't have permission to change this topic"}, status=status.HTTP_404_NOT_FOUND)
         
                     topic_information = TopicInformation.objects.get(topic=topic)
-                    serializer = TopicInformationSerializer(topic_information, data=request.data)
+                    serializer = TopicInformationSerializer(topic_information, data=request.data, context={'request': self.request})
                     if serializer.is_valid():
                         serializer.save()
                         return Response(serializer.data)
@@ -159,7 +159,7 @@ class TopicViewSet(viewsets.ModelViewSet):
             try:
                 user = self.request.user
                 
-                serializer = TopicRequestSerializer(data=request.data)
+                serializer = TopicRequestSerializer(data=request.data, context={'request': self.request})
 
                 course = Course.objects.get(kd_mk=request.data['course'])
 
@@ -183,7 +183,7 @@ class TopicViewSet(viewsets.ModelViewSet):
             user = self.request.user
             print(user)
             topic_requests = TopicRequest.objects.all()
-            serializer = TopicRequestSerializer(topic_requests, many=True)
+            serializer = TopicRequestSerializer(topic_requests, many=True, context={'request': self.request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except TopicRequest.DoesNotExist:
             return Response({'error': 'Topic Request does not exist'}, status=status.HTTP_404_NOT_FOUND)
