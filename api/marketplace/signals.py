@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver, Signal
 from django.db.models import Q
 
-from .models import Application, Topic, TopicRequest, TopicRequestApproval
+from .models import Application, Topic, TopicInformation, TopicRequest, TopicRequestApproval
 from .models import ApplicationApproval
 from ..activity.models import Activity
 
@@ -43,6 +43,11 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
             topic_request=topic_request
         )
 
+        topic_information = TopicInformation.objects.create(
+            topic = topic,
+            html = "<p>" + topic_request.description + "</p>"
+        )
+
         activity.supervisees.add(topic_request.creator)
         activity.supervisees.add(*topic_request.applicants.all())
         activity.supervisors.add(*topic_request.supervisors.all())
@@ -73,6 +78,7 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
             course = application.topic.course,
             application=application
         )
+        
         activity.supervisees.add(application.user)
         activity.supervisees.add(*application.applicants.all())
         activity.supervisors.add(*application.topic.supervisors.all())
