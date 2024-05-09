@@ -49,7 +49,8 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         )
 
         activity.supervisees.add(topic_request.creator)
-        activity.supervisees.add(*topic_request.applicants.all())
+        if topic_request.applicants:
+            activity.supervisees.add(*topic_request.applicants.all())
         activity.supervisors.add(*topic_request.supervisors.all())
         activity.save()
 
@@ -80,6 +81,7 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         )
         
         activity.supervisees.add(application.user)
-        activity.supervisees.add(*application.applicants.all())
+        if application.applicants:
+            activity.supervisees.add(*application.applicants.all())
         activity.supervisors.add(*application.topic.supervisors.all())
         activity.save()
