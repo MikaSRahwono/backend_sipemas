@@ -255,6 +255,7 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['PATCH'], url_path='decline', permission_classes=[IsAuthenticated])
     def decline(self, request, pk=None):
         application_approval = self.get_object(pk)
+        application = Application.objects.get(id=application_approval.application.id)
         user = request.user
 
         if application_approval.approvee != user:
@@ -264,8 +265,9 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Application already declined'}, status=status.HTTP_200_OK)
 
         application_approval.is_approved = False
-        application_approval.application.is_approved = False
+        application.is_approved = False
         application_approval.save()
+        application.save()
         
         return Response({'message': 'Application Declined'}, status=status.HTTP_200_OK)
         
@@ -333,6 +335,7 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['PATCH'], url_path='decline', permission_classes=[IsAuthenticated])
     def decline(self, request, pk=None):
         topic_approval = self.get_object(pk)
+        topic_request = TopicRequest.objects.get(id=topic_approval.topic_request.id)
         user = request.user
 
         if topic_approval.approvee != user:
@@ -342,7 +345,8 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Topic Request already declined'}, status=status.HTTP_200_OK)
 
         topic_approval.is_approved = False
-        topic_approval.topic_request.is_approved = False
+        topic_request.is_approved = False
         topic_approval.save()
+        topic_request.save()
         
         return Response({'message': 'Topic Request Declined'}, status=status.HTTP_200_OK)
