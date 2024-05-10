@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from api.activity.models import Activity
+
 from .models import *
 from ..user.serializers import UserDetailSerializer, UserProfileSerializer, UserSerializer
 from ..academic.serializers import CourseSerializer
@@ -119,6 +121,12 @@ class ApplicationSerializer(serializers.ModelSerializer):
             applicant_group_names = [group.name for group in applicant.groups.all()]
             if not any(group_name in allowed_organization_ids for group_name in applicant_group_names):
                 raise ValidationError(f"Applicant with ID {applicant.id} does not belong to an allowed organization.")
+            
+            user_activities = Activity.objects.filter(supervisees=applicant)
+            for activity in user_activities:
+                if activity.is_completed is None:
+                    return ValidationError(f"{applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
+                
             applicantsInstances.append(applicant)
             
         application = Application.objects.create(**validated_data)
@@ -158,6 +166,12 @@ class TopicRequestSerializer(serializers.ModelSerializer):
             applicant_group_names = [group.name for group in applicant.groups.all()]
             if not any(group_name in allowed_organization_ids for group_name in applicant_group_names):
                 raise ValidationError(f"Applicant with ID {applicant.id} does not belong to an allowed organization.")
+            
+            user_activities = Activity.objects.filter(supervisees=applicant)
+            for activity in user_activities:
+                if activity.is_completed is None:
+                    return ValidationError(f"{applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
+                
             applicantsInstances.append(applicant)
 
         topic_request = TopicRequest.objects.create(**validated_data)

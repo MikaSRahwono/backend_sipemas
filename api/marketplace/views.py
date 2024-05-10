@@ -13,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 
+from api.activity.models import Activity
 from api.permissions import IsAdmin, IsSecretary, ReadOnlyOrAdmin, IsLecturer
 
 from .signals import application_approved_signal, topic_request_approved_signal
@@ -146,6 +147,11 @@ class TopicViewSet(viewsets.ModelViewSet):
             if not any(group_name in allowed_organization_ids for group_name in user_group_names):
                 return Response({"error": "Your study program are allowed for this topic"}, status=status.HTTP_403_FORBIDDEN)
 
+            user_activities = Activity.objects.filter(supervisees=user)
+            for activity in user_activities:
+                if activity.is_completed is None:
+                    return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
+            
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
                 application = serializer.save(topic=topic, user=user)
@@ -169,6 +175,11 @@ class TopicViewSet(viewsets.ModelViewSet):
                 if not any(group_name in allowed_organization_ids for group_name in user_group_names):
                     return Response({"error": "Your study program are allowed for this topic"}, status=status.HTTP_403_FORBIDDEN)
                 
+                user_activities = Activity.objects.filter(supervisees=user)
+                for activity in user_activities:
+                    if activity.is_completed is None:
+                        return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
+                    
                 if serializer.is_valid():
                     serializer.save(creator=user)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -238,6 +249,11 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
     def approve(self, request, pk=None):
         application_approval = self.get_object(pk)
         user = request.user
+
+        user_activities = Activity.objects.filter(supervisees=user)
+        for activity in user_activities:
+            if activity.is_completed is None:
+                return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
 
         if application_approval.approvee != user:
             return Response({'error': "You don't have permission to approve"}, status=status.HTTP_403_FORBIDDEN)
@@ -318,6 +334,11 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
     def approve(self, request, pk=None):
         topic_approval = self.get_object(pk)
         user = request.user
+
+        user_activities = Activity.objects.filter(supervisees=user)
+        for activity in user_activities:
+            if activity.is_completed is None:
+                return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
 
         if topic_approval.approvee != user:
             return Response({'error': "You don't have permission to approve"}, status=status.HTTP_403_FORBIDDEN)
