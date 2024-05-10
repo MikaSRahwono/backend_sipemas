@@ -12,6 +12,7 @@ from rest_framework.exceptions import NotFound
 from api.academic.models import ActivityStep, AssignmentComponent
 from api.activity.models import Activity, FileSubmission, LogSubmission
 from api.activity.serializers import ActivitySerializer, FileSubmissionSerializer, LogSubmissionSerializer, StepCompletionSerializer
+from api.activity.signals import handle_activity_completed_signal
 
 # Create your views here.
 class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
@@ -166,6 +167,7 @@ class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
             serializer = StepCompletionSerializer(data=request.data, context={'request': self.request})
             if serializer.is_valid():
                 serializer.save(activity=activity, activity_step=activity_step, is_completed=True)
+                handle_activity_completed_signal.send(sender=Activity, activity=activity, user=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
