@@ -28,7 +28,7 @@ class TopicInformation(models.Model):
         return self.html
 
 class Application(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applicants_leader')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applicants_leader')
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     applicants = models.ManyToManyField(User, related_name='applicants')
     praproposal = models.CharField(max_length=256)
@@ -37,6 +37,11 @@ class Application(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
 class ApplicationApproval(models.Model):
+    class ApprovalStatus(models.IntegerChoices):
+        DECLINED = -1
+        WAITING = 0
+        ACCEPTED = 1
+        MOVED = 2
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
     approvee = models.ForeignKey(User, on_delete=models.CASCADE)
     is_approved = models.BooleanField(null=True)
@@ -45,6 +50,7 @@ class ApplicationApproval(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     deleted_on = models.DateTimeField(blank=True, auto_now=False, null=True)
+    approval_status = models.IntegerField(choices=ApprovalStatus, default=0)
 
 class TopicRequest(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -60,8 +66,15 @@ class TopicRequest(models.Model):
     is_approved = models.BooleanField(null=True)
 
 class TopicRequestApproval(models.Model):
+    class ApprovalStatus(models.IntegerChoices):
+        DECLINED = -1
+        WAITING = 0
+        ACCEPTED = 1
+        ALL_ACCEPTED = 2
+        MOVED = 3
     topic_request = models.ForeignKey(TopicRequest, on_delete=models.CASCADE)
     approvee = models.ForeignKey(User, on_delete=models.CASCADE)
+    approval_status = models.IntegerField(choices=ApprovalStatus, default=0)
     is_approved = models.BooleanField(null=True)
     is_supervisor = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)

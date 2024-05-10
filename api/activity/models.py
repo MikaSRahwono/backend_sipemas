@@ -15,6 +15,7 @@ class Activity(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     deleted_on = models.DateTimeField(blank=True, auto_now=False, null=True)
+    is_completed = models.BooleanField(blank=True, null=True)
 
 class LogSubmission(models.Model):        
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='logsubmissions')
