@@ -6,7 +6,8 @@ from .models import Application, Topic, TopicInformation, TopicRequest, TopicReq
 from .models import ApplicationApproval
 from ..activity.models import Activity
 
-@receiver(m2m_changed, sender=TopicRequest.supervisors.through)
+create_request_approval_signal = Signal()
+@receiver(create_request_approval_signal)
 def create_request_approval(sender, instance, **kwargs):
     if kwargs['action'] == 'post_add':
         for supervisor in instance.supervisors.all():
@@ -17,7 +18,6 @@ def create_request_approval(sender, instance, **kwargs):
             approval_instance.save()
 
 topic_request_approved_signal = Signal()
-
 @receiver(topic_request_approved_signal)
 def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs):
     
@@ -95,43 +95,8 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         
         activity.save()
 
-@receiver(topic_request_approved_signal)
-def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs):
-    topic_request = topic_request_approval.topic_request
-    all_approved = not topic_request.topicrequestapproval_set.filter(Q(is_approved=False) | Q(is_approved__isnull=True)).exists()
-
-    if all_approved:
-        topic_request.is_approved = True
-        topic_request.save()
-        topic = Topic.objects.create(
-            course = topic_request.course,
-            title = topic_request.title,
-            is_open = False,
-            num_of_people = topic_request.num_of_people,
-            created_on = topic_request.created_on,
-            creator = topic_request.creator
-        )
-        topic.supervisors.add(*topic_request.supervisors.all())
-        topic.fields.add(*topic_request.fields.all())
-
-        activity = Activity.objects.create(
-            topic = topic,
-            course = topic.course,
-            topic_request=topic_request
-        )
-
-        topic_information = TopicInformation.objects.create(
-            topic = topic,
-            html = "<p>" + topic_request.description + "</p>"
-        )
-
-        activity.supervisees.add(topic_request.creator)
-        if topic_request.applicants:
-            activity.supervisees.add(*topic_request.applicants.all())
-        activity.supervisors.add(*topic_request.supervisors.all())
-        activity.save()
-
-@receiver(m2m_changed, sender=Application.applicants.through)
+create_application_approval_signal = Signal()
+@receiver(create_application_approval_signal)
 def create_application_approval(sender, instance, **kwargs):
     if kwargs['action'] == 'post_add':
         for supervisor in instance.topic.supervisors.all():
@@ -142,7 +107,6 @@ def create_application_approval(sender, instance, **kwargs):
             approval_instance.save()
 
 application_approved_signal = Signal()
-
 @receiver(application_approved_signal)
 def handle_application_approved(sender, application_approval, user, **kwargs):
     

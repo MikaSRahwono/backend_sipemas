@@ -30,7 +30,7 @@ class TopicInformation(models.Model):
 class Application(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applicants_leader')
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    applicants = models.ManyToManyField(User, related_name='applicants')
+    applicants = models.ManyToManyField(User, related_name='applicants', blank=True)
     praproposal = models.CharField(max_length=256)
     is_approved = models.BooleanField(null=True)
     created_on = models.DateTimeField(auto_now_add=True)

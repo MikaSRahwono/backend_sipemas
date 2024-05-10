@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from api.activity.models import Activity
 from api.permissions import IsAdmin, IsSecretary, ReadOnlyOrAdmin, IsLecturer
 
-from .signals import application_approved_signal, topic_request_approved_signal
+from .signals import application_approved_signal, topic_request_approved_signal, create_application_approval_signal, create_request_approval_signal
 
 import django_filters
 
@@ -154,7 +154,8 @@ class TopicViewSet(viewsets.ModelViewSet):
             
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
-                serializer.save(topic=topic, creator=user)
+                application = serializer.save(topic=topic, creator=user)
+                create_application_approval_signal.send(sender=Application, instance=application, action='post_add')
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -182,7 +183,8 @@ class TopicViewSet(viewsets.ModelViewSet):
                         return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
                     
                 if serializer.is_valid():
-                    serializer.save(creator=user)
+                    topic_request = serializer.save(creator=user)
+                    create_request_approval_signal.send(sender=TopicRequest, instance=topic_request, action='post_add')
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 
