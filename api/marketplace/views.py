@@ -150,7 +150,7 @@ class TopicViewSet(viewsets.ModelViewSet):
             user_activities = Activity.objects.filter(supervisees=user)
             for activity in user_activities:
                 if activity.is_completed is None:
-                    return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
+                    return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
             
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
@@ -178,7 +178,7 @@ class TopicViewSet(viewsets.ModelViewSet):
                 user_activities = Activity.objects.filter(supervisees=user)
                 for activity in user_activities:
                     if activity.is_completed is None:
-                        return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
+                        return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
                     
                 if serializer.is_valid():
                     serializer.save(creator=user)
@@ -338,7 +338,7 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
         user_activities = Activity.objects.filter(supervisees=user)
         for activity in user_activities:
             if activity.is_completed is None:
-                return Response({'error': "You already have other running activity in course" + activity.topic.course.nm_mk}, status=status.HTTP_403_FORBIDDEN)
+                return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
 
         if topic_approval.approvee != user:
             return Response({'error': "You don't have permission to approve"}, status=status.HTTP_403_FORBIDDEN)
