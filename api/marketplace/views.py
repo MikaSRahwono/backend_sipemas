@@ -154,9 +154,10 @@ class TopicViewSet(viewsets.ModelViewSet):
             
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
-                application = serializer.save(topic=topic, user=user)
+                serializer.save(topic=topic, creator=user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         except Topic.DoesNotExist:
                 return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
         

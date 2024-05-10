@@ -105,7 +105,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = '__all__'
-        read_only_fields = ('created_on', 'updated_on', 'topic', 'user')
+        read_only_fields = ('created_on', 'updated_on', 'topic', 'creator')
 
     def create(self,validated_data):
         topic = validated_data['topic']
@@ -125,7 +125,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             user_activities = Activity.objects.filter(supervisees=applicant)
             for activity in user_activities:
                 if activity.is_completed is None:
-                    return ValidationError(f"{applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
+                    raise ValidationError(f"Applicant id {applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
                 
             applicantsInstances.append(applicant)
             
@@ -170,7 +170,7 @@ class TopicRequestSerializer(serializers.ModelSerializer):
             user_activities = Activity.objects.filter(supervisees=applicant)
             for activity in user_activities:
                 if activity.is_completed is None:
-                    return ValidationError(f"{applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
+                    raise ValidationError(f"Applicant id {applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
                 
             applicantsInstances.append(applicant)
 

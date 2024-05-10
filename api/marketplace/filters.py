@@ -22,3 +22,13 @@ class ApplicationFilter(django_filters.FilterSet):
         fields = {
             'is_approved': ['exact'],
         }
+
+class ApplicationApprovalFilter(django_filters.FilterSet):
+    application__topic__id = django_filters.NumberFilter(ookup_expr='exact')
+
+    class Meta:
+        model = ApplicationApproval
+        fields = {
+            'is_approved': ['exact'],
+            'application__topic__id': ['exact'],
+        }
