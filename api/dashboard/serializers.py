@@ -20,8 +20,6 @@ class StudentActivitySerializer(serializers.ModelSerializer):
     supervisors = SupervisorSerializer(read_only=True, many=True)
     supervisees = SuperviseesSerializer(read_only=True, many=True)
 
-    file_submissions = FileSubmissionSerializer(source='filesubmissions', read_only=True, many=True)
-    log_submissions = LogSubmissionSerializer(source='logsubmissions', read_only=True, many=True)
     step_completion = StepCompletionSerializer(source='stepcompletions', read_only=True, many=True)
 
     topic = TopicListSerializer(read_only=True)
@@ -30,6 +28,39 @@ class StudentActivitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        assignment_components = AssignmentComponent.objects.filter(
+            step_component__activity_step__course__kd_mk=instance.course.kd_mk
+        )
+
+        assignments_data = []
+        for assignment in assignment_components:
+            if assignment.type == "LOG":
+                log_submissions = LogSubmission.objects.filter(activity__id=instance.id, assignment_component=assignment)
+                serializer = LogSubmissionSerializer(log_submissions, many=True)
+                assignment_serializer = AssignmentComponentSerializer(assignment)
+                assignment_submission = {
+                    'assignment_component': assignment_serializer.data,
+                    'data': serializer.data
+                }
+                assignments_data.append(assignment_submission)
+                
+            elif assignment.type == "SUB":
+                file_submission = FileSubmission.objects.filter(activity__id=instance.id, assignment_component=assignment).first()
+                serializer = FileSubmissionSerializer(file_submission)
+                assignment_serializer = AssignmentComponentSerializer(assignment)
+                assignment_submission = {
+                    'assignment_component': assignment_serializer.data,
+                    'data': serializer.data
+                }
+                assignments_data.append(assignment_submission)
+
+        data['assignments'] = assignments_data
+
+        return data
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
