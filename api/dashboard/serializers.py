@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.academic.models import AssignmentComponent
-from api.academic.serializers import AssignmentComponentSerializer, StepAssignmentSerializer
+from api.academic.serializers import AssignmentComponentSerializer, CourseSerializer, StepAssignmentSerializer
 from api.activity.models import Activity, FileSubmission, LogSubmission
 from api.activity.serializers import FileSubmissionSerializer, LogSubmissionSerializer, StepCompletionSerializer, SuperviseesSerializer
 from api.dashboard.models import Note
@@ -21,6 +21,7 @@ class StudentActivitySerializer(serializers.ModelSerializer):
     step_completion = StepCompletionSerializer(source='stepcompletions', read_only=True, many=True)
 
     topic = TopicListSerializer(read_only=True)
+    course = CourseSerializer(read_only=True)
 
     class Meta:
         model = Activity
