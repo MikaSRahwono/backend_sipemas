@@ -158,6 +158,17 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
         except:
             return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+    @action(detail=False, methods=['GET'], url_path='lecturers/(?P<user_id>\d+)')
+    def lecturer_profile(self, request, user_id=None):
+        try:
+            user = self.request.user
+
+            serializer = LecturerDataSerializer(user)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class LecturerDashboardViewSet(viewsets.GenericViewSet):
     serializer_class = ActivitySerializer
     model = Activity

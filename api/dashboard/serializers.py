@@ -82,7 +82,9 @@ class LecturerDataSerializer(serializers.ModelSerializer):
         lecturer = User.objects.get(id=instance.id)
 
         activities = Activity.objects.filter(supervisors=lecturer)
+        activity_serializer = ActivitySerializer(activities, many=True)
         data['activities_count'] = len(activities)
+        data['supervised_activity'] = activity_serializer.data
 
         not_all_approved_application_approvals = ApplicationApproval.objects.filter(
             Q(approvee=lecturer) &
@@ -93,10 +95,18 @@ class LecturerDataSerializer(serializers.ModelSerializer):
             (Q(approval_status=0) | Q(approval_status=1))
         )
         data['approval_pending'] = len(not_all_approved_application_approvals) + len(not_all_approved_topic_requests_approvals)
+        
+        topic_request_approvals = []
+        for topic_request_approval in not_all_approved_topic_requests_approvals:
+            topic_request_serializer = TopicRequestApprovalSerializer(topic_request_approval)
+            topic_request_approvals.append(topic_request_serializer.data)
+
+        data['topic_request_approvals'] = topic_request_approvals
 
         topics = Topic.objects.filter(supervisors=lecturer)
         topic_serializer = TopicListSerializer(topics, many=True)
-        data['supervised_topics'] = len(topic_serializer.data)
+        data['supervised_topics_count'] = len(topics)
+        data['supervised_topics'] = topic_serializer.data
 
         count_per_activities = []
         courses = Course.objects.all()
