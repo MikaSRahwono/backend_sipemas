@@ -17,7 +17,7 @@ from api.dashboard.models import Note
 from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer
 from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequestApproval
 from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
-from api.permissions import IsSecretary
+from api.permissions import IsAdmin, IsSecretary
 from api.user.serializers import UserSerializer
 from api.user.models import User
 
@@ -276,3 +276,60 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
         # except:
         #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+        
+class ManagerDashboardViewSet(viewsets.GenericViewSet):
+    serializer_class = ActivitySerializer
+    model = Activity
+    permission_classes = (IsAdmin, IsAuthenticated,)
+    queryset = Activity.objects.all()  
+    pagination_class = None 
+    filterset_class = ActivityFilter
+
+    @action(detail=False, methods=['GET'], url_path='overview')
+    def overview(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            students = User.objects.filter(
+                groups__name="Student"
+            ).distinct()
+
+            students_have_activities = 0
+            student_have_pending_approval = 0
+            for student in students:
+                if Activity.objects.filter(supervisees=student, is_completed=None).exists():
+                    students_have_activities += 1
+                elif ApplicationApproval.objects.filter(
+                        Q(approvee=student) &
+                        (Q(approval_status=0) | Q(approval_status=1))
+                    ).exists() or TopicRequestApproval.objects.filter(
+                        Q(approvee=student) &
+                        (Q(approval_status=0) | Q(approval_status=1))
+                    ).exists():
+                    student_have_pending_approval += 1
+
+            data = {
+                'total_students': len(students),
+                'students_have_activities': students_have_activities,
+                'student_have_pending_approval': student_have_pending_approval
+            }
+
+            return Response(data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['GET'], url_path='lecturers')
+    def lecturer(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            lecturers = User.objects.filter(
+                groups__name="Lecturer"
+            ).distinct()
+
+            serializer = LecturerDataSerializer(lecturers, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
