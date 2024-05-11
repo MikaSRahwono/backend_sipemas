@@ -4,6 +4,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django.contrib.auth.models import User, Group
 
 from api.academic.models import AssignmentComponent, Course
 from api.academic.serializers import AssignmentComponentSerializer
@@ -33,7 +34,6 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
 
             serializer = AssignmentComponentSerializer(assignment_components, context={'request': self.request}, many=True)
             return Response(serializer.data)
-    
         except:
             return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
     
@@ -48,6 +48,31 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
             ).distinct()
 
             serializer = StudentActivitySerializer(activities, context={'request': self.request}, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['GET'], url_path='student_no_activity/(?P<kd_mk>\w+)')
+    def student_no_activity(self, request, kd_mk=None):
+        try:
+            user = self.request.user
+            group = Group.objects.get(name='Student')
+            students = User.objects.filter(groups=group)
+            course = Course.objects.get(kd_mk=kd_mk)
+
+            user_group_names = [group.name for group in user.groups.all()]
+            students_per_organizations = students.filter(
+                groups__name__in=user_group_names
+            ).distinct()
+
+            student_no_activity_data = []
+
+            for student in students_per_organizations:
+                if not Activity.objects.filter(supervisees=student, course=course).exists():
+                    student_no_activity_data.append(student)
+            
+            serializer = UserSerializer(student_no_activity_data, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
         except:
