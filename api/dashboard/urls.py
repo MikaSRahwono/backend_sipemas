@@ -7,6 +7,7 @@ app_name = 'dashboard'
 
 router = DefaultRouter()
 router.register(r'secretary', SecretaryDashboardViewSet, basename='secretary')
+router.register(r'lecturer', LecturerDashboardViewSet, basename='lecturer')
 
 urlpatterns = [
     path(r'', include(router.urls)),

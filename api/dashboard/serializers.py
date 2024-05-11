@@ -6,8 +6,8 @@ from api.academic.serializers import AssignmentComponentSerializer, CourseSerial
 from api.activity.models import Activity, FileSubmission, LogSubmission
 from api.activity.serializers import ActivitySerializer, FileSubmissionSerializer, LogSubmissionSerializer, StepCompletionSerializer, SuperviseesSerializer
 from api.dashboard.models import Note
-from api.marketplace.models import Application, ApplicationApproval, TopicRequestApproval
-from api.marketplace.serializers import SupervisorSerializer, TopicListSerializer
+from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequest, TopicRequestApproval
+from api.marketplace.serializers import SupervisorSerializer, TopicListSerializer, TopicRequestApprovalSerializer, TopicRequestSerializer
 from api.user.serializers import UserDetailSerializer, UserProfileSerializer
 from api.user.models import User
 
@@ -94,6 +94,10 @@ class LecturerDataSerializer(serializers.ModelSerializer):
         )
         data['approval_pending'] = len(not_all_approved_application_approvals) + len(not_all_approved_topic_requests_approvals)
 
+        topics = Topic.objects.filter(supervisors=lecturer)
+        topic_serializer = TopicListSerializer(topics, many=True)
+        data['supervised_topics'] = len(topic_serializer.data)
+
         count_per_activities = []
         courses = Course.objects.all()
 
@@ -105,5 +109,47 @@ class LecturerDataSerializer(serializers.ModelSerializer):
             }
             count_per_activities.append(data_count)
         
-        data['acitivites_count_courses'] = count_per_activities
+        data['activites_count_courses'] = count_per_activities
         return data
+
+
+class StudentDataSerializer(serializers.ModelSerializer):
+    user_detail = UserDetailSerializer(read_only=True)
+    user_profile = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_detail', 'user_profile']
+        depth = 1
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        student = User.objects.get(id=instance.id)
+
+        activity = Activity.objects.filter(supervisees=student, is_completed=None).first()
+        data['currently_taken_course'] = activity.course.nm_mk
+
+        topic_requests_created = TopicRequest.objects.filter(
+            Q(creator=student)
+        )
+        topic_requested_approvals = TopicRequestApproval.objects.filter(
+            Q(approvee=student)
+        )
+
+        topic_requested = []
+        for topic_request in topic_requests_created:
+            topic_request_serializer = TopicRequestSerializer(topic_request)
+            topic_requested.append(topic_request_serializer.data)
+        for approval in topic_requested_approvals:
+            topic_request_serializer = TopicRequestSerializer(approval.topic_request)
+            topic_requested.append(topic_request_serializer.data)
+        
+        data['topic_requested_count'] = len(topic_requested) + len(topic_requests_created)
+        data['topic_requested'] = topic_requested
+
+        activities = Activity.objects.filter(supervisees=student, is_completed=None)
+        activity_serializer = ActivitySerializer(activities, many=True)
+        data ['active_activity'] = activity_serializer.data
+
+        return data
+    

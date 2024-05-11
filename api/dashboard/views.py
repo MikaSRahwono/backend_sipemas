@@ -14,8 +14,9 @@ from api.activity.models import Activity
 from api.activity.serializers import ActivitySerializer
 from api.dashboard.filters import ActivityFilter
 from api.dashboard.models import Note
-from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer
-from api.marketplace.models import ApplicationApproval, TopicRequestApproval
+from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer
+from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequestApproval
+from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
 from api.permissions import IsSecretary
 from api.user.serializers import UserSerializer
 from api.user.models import User
@@ -156,4 +157,111 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
     
         except:
             return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class LecturerDashboardViewSet(viewsets.GenericViewSet):
+    serializer_class = ActivitySerializer
+    model = Activity
+    permission_classes = (IsSecretary, IsAuthenticated,)
+    queryset = Activity.objects.all()  
+    pagination_class = None 
+    filterset_class = ActivityFilter
+
+    @action(detail=False, methods=['GET'], url_path='overview')
+    def overview(self, request, pk=None):
+        try:
+            user = self.request.user
+
+            serializer = LecturerDataSerializer(user)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    @action(detail=False, methods=['GET'], url_path='supervised_activities')
+    def supervised_activities(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            activities = super().get_queryset().filter(supervisors=user)
+
+            print(activities)
+
+            serializer = StudentActivitySerializer(activities, context={'request': self.request}, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['GET'], url_path='supervised_topics')
+    def supervised_topics(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            topics = Topic.objects.filter(supervisors=user)
+
+            serializer = TopicListSerializer(topics, context={'request': self.request}, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['GET'], url_path='application_approvals/(?P<topic_id>\d+)')
+    def application_approvals(self, request, topic_id=None):
+        try:
+            user = self.request.user
+            
+            topic = Topic.objects.get(id=topic_id)
+            application_approvals = ApplicationApproval.objects.filter(application__topic=topic, approvee=user)
+
+            serializer = ApplicationApprovalSerializer(application_approvals, context={'request': self.request}, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['GET'], url_path='topic_request_approvals')
+    def topic_request_approvals(self, request):
+        try:
+            user = self.request.user
+            
+            topic_request_approvals = TopicRequestApproval.objects.filter(topic_request__supervisors=user, approvee=user)
+
+            serializer = TopicRequestApprovalSerializer(topic_request_approvals, context={'request': self.request}, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
+           
+    @action(detail=False, methods=['GET'], url_path='students')
+    def students(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            user_group_names = [group.name for group in user.groups.all()]
+            students = User.objects.filter(
+                groups__name="Student"
+            ).distinct()
+            students = students.filter(
+                groups__name__in=user_group_names
+            )
+
+            serializer = UserSerializer(students, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['GET'], url_path='students/(?P<student_id>\d+)')
+    def student_profile(self, request, student_id=None):
+        # try:
+            user = self.request.user
+            
+            student = User.objects.get(id=student_id)
+
+            serializer = StudentDataSerializer(student)
+            return Response(serializer.data)
+    
+        # except:
+        #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
