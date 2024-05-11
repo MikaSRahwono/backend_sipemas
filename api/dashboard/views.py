@@ -14,7 +14,7 @@ from api.activity.models import Activity
 from api.activity.serializers import ActivitySerializer
 from api.dashboard.filters import ActivityFilter
 from api.dashboard.models import Note
-from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer
+from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer, UserGroupsSerializer
 from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequestApproval
 from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
 from api.permissions import IsAdmin, IsSecretary
@@ -329,6 +329,57 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
             ).distinct()
 
             serializer = LecturerDataSerializer(lecturers, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['GET'], url_path='user_roles')
+    def user_roles(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            lecturers_and_secretaries = User.objects.filter(
+                Q(groups__name="Lecturer") | Q(groups__name="Secretary")
+            ).distinct()
+
+            serializer = UserGroupsSerializer(lecturers_and_secretaries, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['POST'], url_path='user_roles/(?P<user_id>\d+)/add')
+    def add_user_roles(self, request, user_id=None):
+        try:            
+            user = User.objects.get(id=user_id)
+
+            group_name = request.data.get('group_name')
+            if not group_name:
+                return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
+
+            group = Group.objects.get(name=group_name)
+            user.groups.add(group)
+
+            serializer = UserGroupsSerializer(user)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    @action(detail=False, methods=['POST'], url_path='user_roles/(?P<user_id>\d+)/remove')
+    def remove_user_roles(self, request, user_id=None):
+        try:            
+            user = User.objects.get(id=user_id)
+
+            group_name = request.data.get('group_name')
+            if not group_name:
+                return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
+
+            group = Group.objects.get(name=group_name)
+            user.groups.remove(group)
+
+            serializer = UserGroupsSerializer(user)
             return Response(serializer.data)
     
         except:

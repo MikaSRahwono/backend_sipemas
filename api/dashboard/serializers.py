@@ -8,8 +8,8 @@ from api.activity.serializers import ActivitySerializer, FileSubmissionSerialize
 from api.dashboard.models import Note
 from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequest, TopicRequestApproval
 from api.marketplace.serializers import SupervisorSerializer, TopicListSerializer, TopicRequestApprovalSerializer, TopicRequestSerializer
-from api.user.serializers import UserDetailSerializer, UserProfileSerializer
-from api.user.models import User
+from api.user.serializers import OrganizationSerializer, UserDetailSerializer, UserProfileSerializer
+from api.user.models import Organization, User
 
 class StudentAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -160,6 +160,31 @@ class StudentDataSerializer(serializers.ModelSerializer):
         activities = Activity.objects.filter(supervisees=student, is_completed=None)
         activity_serializer = ActivitySerializer(activities, many=True)
         data ['active_activity'] = activity_serializer.data
+
+        return data
+    
+class UserGroupsSerializer(serializers.ModelSerializer):
+    user_detail = UserDetailSerializer(read_only=True)
+    user_profile = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_detail', 'user_profile']
+        depth = 1
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = User.objects.get(id=instance.id)
+
+        unwanted_group_names = ["Lecturer", "Student", "Secretary"]
+        user_group_names = [group.name for group in user.groups.all() if group.name not in unwanted_group_names]
+
+        organizations = []
+        for org in user_group_names:
+            organization = Organization.objects.get(id=org)
+            serializer = OrganizationSerializer(organization)
+            organizations.append(serializer.data)
+        data['organizations'] = organizations
 
         return data
     
