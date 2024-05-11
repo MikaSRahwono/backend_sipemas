@@ -262,7 +262,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def update_picture(self, request):
         user = self.request.user
         user_profile = UserProfile.objects.get(user=user)
-        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True, context={'request': self.request})
+        serializer = UserProfileSerializer(user_profile, data=request.data, context={'request': self.request}, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

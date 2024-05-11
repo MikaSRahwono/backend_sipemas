@@ -15,7 +15,7 @@ class UserFieldSerializer(serializers.ModelSerializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     fields = UserFieldSerializer(read_only=True,many=True)
-    profile_image = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = UserProfile
@@ -43,6 +43,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         try: 
+            if self.initial_data['profile_image']:
+                instance.profile_image = self.initial_data['profile_image']
+
             fields = self.initial_data['fields']
             fieldsInstances = []
             for field in fields:
@@ -51,6 +54,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         except:
             pass
+
         for k, v in validated_data.items():
             setattr(instance, k, v)
         instance.save()
