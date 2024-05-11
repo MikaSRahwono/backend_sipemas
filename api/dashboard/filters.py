@@ -9,7 +9,7 @@ class ActivityFilter(django_filters.FilterSet):
     supervisors__email = django_filters.CharFilter(lookup_expr='icontains')
 
     class Meta:
-        model = Topic
+        model = Activity
         fields = {
             'course_id': ['exact'],
             'topic__title': ['exact'],

@@ -5,6 +5,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.contrib.auth.models import User, Group
+from django.db.models import Q
+
 
 from api.academic.models import AssignmentComponent, Course
 from api.academic.serializers import AssignmentComponentSerializer
@@ -13,6 +15,7 @@ from api.activity.serializers import ActivitySerializer
 from api.dashboard.filters import ActivityFilter
 from api.dashboard.models import Note
 from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer
+from api.marketplace.models import ApplicationApproval, TopicRequestApproval
 from api.permissions import IsSecretary
 from api.user.serializers import UserSerializer
 from api.user.models import User
@@ -26,6 +29,45 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
+
+    @action(detail=False, methods=['GET'], url_path='overview')
+    def overview(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            user_group_names = [group.name for group in user.groups.all()]
+            students = User.objects.filter(
+                groups__name="Student"
+            ).distinct()
+            students = students.filter(
+                groups__name__in=user_group_names
+            )
+
+            students_have_activities = 0
+            student_have_pending_approval = 0
+            for student in students:
+                if Activity.objects.filter(supervisees=student, is_completed=None).exists():
+                    students_have_activities += 1
+                elif ApplicationApproval.objects.filter(
+                        Q(approvee=student) &
+                        (Q(approval_status=0) | Q(approval_status=1))
+                    ).exists() or TopicRequestApproval.objects.filter(
+                        Q(approvee=student) &
+                        (Q(approval_status=0) | Q(approval_status=1))
+                    ).exists():
+                    student_have_pending_approval += 1
+
+            data = {
+                'total_students': len(students),
+                'students_have_activities': students_have_activities,
+                'student_have_pending_approval': student_have_pending_approval
+            }
+
+            return Response(data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
     @action(detail=False, methods=['POST', 'GET'], url_path='notes/(?P<activity_id>\w+)')
     def notes(self, request, activity_id=None):
@@ -57,7 +99,7 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
                     return Response({'error': 'User detail does not exist'}, status=status.HTTP_404_NOT_FOUND)
                 
         except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['GET'], url_path='student_activities')
     def student_activities(self, request, pk=None):
@@ -73,7 +115,7 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
             return Response(serializer.data)
     
         except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @action(detail=False, methods=['GET'], url_path='student_no_activity/(?P<kd_mk>\w+)')
     def student_no_activity(self, request, kd_mk=None):
@@ -98,7 +140,7 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
             return Response(serializer.data)
     
         except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @action(detail=False, methods=['GET'], url_path='lecturers')
     def lecturer(self, request, pk=None):
@@ -113,4 +155,5 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
             return Response(serializer.data)
     
         except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        

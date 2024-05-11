@@ -6,7 +6,7 @@ from api.academic.serializers import AssignmentComponentSerializer, CourseSerial
 from api.activity.models import Activity, FileSubmission, LogSubmission
 from api.activity.serializers import ActivitySerializer, FileSubmissionSerializer, LogSubmissionSerializer, StepCompletionSerializer, SuperviseesSerializer
 from api.dashboard.models import Note
-from api.marketplace.models import Application, ApplicationApproval
+from api.marketplace.models import Application, ApplicationApproval, TopicRequestApproval
 from api.marketplace.serializers import SupervisorSerializer, TopicListSerializer
 from api.user.serializers import UserDetailSerializer, UserProfileSerializer
 from api.user.models import User
@@ -47,7 +47,7 @@ class StudentActivitySerializer(serializers.ModelSerializer):
                     'data': serializer.data
                 }
                 assignments_data.append(assignment_submission)
-                
+
             elif assignment.type == "SUB":
                 file_submission = FileSubmission.objects.filter(activity__id=instance.id, assignment_component=assignment).first()
                 serializer = FileSubmissionSerializer(file_submission)
@@ -88,7 +88,11 @@ class LecturerDataSerializer(serializers.ModelSerializer):
             Q(approvee=lecturer) &
             (Q(approval_status=0) | Q(approval_status=1))
         )
-        data['approval_pending'] = len(not_all_approved_application_approvals)
+        not_all_approved_topic_requests_approvals = TopicRequestApproval.objects.filter(
+            Q(approvee=lecturer) &
+            (Q(approval_status=0) | Q(approval_status=1))
+        )
+        data['approval_pending'] = len(not_all_approved_application_approvals) + len(not_all_approved_topic_requests_approvals)
 
         count_per_activities = []
         courses = Course.objects.all()
