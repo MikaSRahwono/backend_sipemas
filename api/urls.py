@@ -6,4 +6,5 @@ urlpatterns = [
     path('authentication/', include(('api.authentication.urls', 'authentication'), namespace='authentication')),
     path('users/', include(('api.user.urls', 'user'), namespace='user')),
     path('activities/', include(('api.activity.urls', 'activity'), namespace='activities')),
+    path('dashboard/', include(('api.dashboard.urls', 'dashboard'), namespace='dashboards')),
 ]
