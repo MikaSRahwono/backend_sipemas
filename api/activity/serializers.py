@@ -2,6 +2,18 @@ from api.marketplace.serializers import SupervisorSerializer, TopicListSerialize
 from rest_framework import serializers
 from .models import *
 
+class LogSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogSubmission
+        fields = ['id','subject', 'body', 'assignment_component', 'created_on', 'updated_on', 'deleted_on']
+        read_only_fields = ('created_on', 'updated_on', 'deleted_on', 'assignment_component',)
+
+class FileSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FileSubmission
+        fields = ['id','subject', 'body', 'file', 'created_on', 'updated_on', 'deleted_on', 'assignment_component']
+        read_only_fields = ('created_on', 'updated_on', 'deleted_on', 'assignment_component',)
+
 class StepCompletionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StepCompletion

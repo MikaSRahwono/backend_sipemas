@@ -11,7 +11,7 @@ from rest_framework.exceptions import NotFound
 
 from api.academic.models import ActivityStep, AssignmentComponent
 from api.activity.models import Activity, FileSubmission, LogSubmission
-from api.activity.serializers import ActivitySerializer, StepCompletionSerializer
+from api.activity.serializers import ActivitySerializer, FileSubmissionSerializer, LogSubmissionSerializer, StepCompletionSerializer
 from api.activity.signals import handle_activity_completed_signal
 
 # Create your views here.
