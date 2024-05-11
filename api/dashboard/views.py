@@ -11,7 +11,7 @@ from api.academic.serializers import AssignmentComponentSerializer
 from api.activity.models import Activity
 from api.activity.serializers import ActivitySerializer
 from api.dashboard.models import Note
-from api.dashboard.serializers import NoteSerializer, StudentActivitySerializer
+from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer
 from api.permissions import IsSecretary
 from api.user.serializers import UserSerializer
 from api.user.models import User
@@ -106,6 +106,21 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
                     student_no_activity_data.append(student)
             
             serializer = UserSerializer(student_no_activity_data, context={'request': self.request}, many=True)
+            return Response(serializer.data)
+    
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_404_NOT_FOUND)
+        
+    @action(detail=False, methods=['GET'], url_path='lecturers')
+    def lecturer(self, request, pk=None):
+        try:
+            user = self.request.user
+            
+            lecturers = User.objects.filter(
+                groups__name="Lecturer"
+            ).distinct()
+
+            serializer = LecturerDataSerializer(lecturers, many=True)
             return Response(serializer.data)
     
         except:
