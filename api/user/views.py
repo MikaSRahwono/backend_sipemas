@@ -274,7 +274,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if request.method == 'GET':
             try:
-                applications = Application.objects.filter(user=user)
+                applications = Application.objects.filter(creator=user)
                 serializer = ApplicationSerializer(applications, many=True, context={'request': self.request})
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Application.DoesNotExist:
@@ -282,7 +282,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         elif request.method == 'PUT':
             try:
-                application = Application.objects.get(user=user)
+                application = Application.objects.get(creator=user)
                 serializer = ApplicationSerializer(application, data=request.data, context={'request': self.request})
                 if serializer.is_valid():
                     serializer.save()
