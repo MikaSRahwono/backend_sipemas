@@ -43,14 +43,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         try: 
-            if self.initial_data['profile_image']:
-                instance.profile_image = self.initial_data['profile_image']
-
-            fields = self.initial_data['fields']
-            fieldsInstances = []
-            for field in fields:
-                fieldsInstances.append(Field.objects.get(pk = field['id']))
-            instance.fields.set(fieldsInstances) 
+            try:
+                if self.initial_data['profile_image']:
+                    instance.profile_image = self.initial_data['profile_image']
+            except:
+                fields = self.initial_data['fields']
+                fieldsInstances = []
+                for field in fields:
+                    fieldsInstances.append(Field.objects.get(pk = field['id']))
+                instance.fields.set(fieldsInstances) 
 
         except:
             pass
