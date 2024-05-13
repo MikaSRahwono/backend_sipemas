@@ -28,7 +28,7 @@ class Organization(models.Model):
 
 class UserDetail(models.Model):
     class UserType(models.TextChoices):
-        STAFF = 'STA', _('Staf')
+        SECRETARY = 'SEC', _('Secretary')
         LECTURER = 'LEC', _('Dosen')
         STUDENT = 'STU', _('Mahasiswa')
 
