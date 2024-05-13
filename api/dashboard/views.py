@@ -152,7 +152,7 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
                 groups__name="Lecturer"
             ).distinct()
 
-            serializer = LecturerDataSerializer(lecturers, many=True)
+            serializer = LecturerDataSerializer(lecturers, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
         except:
@@ -163,7 +163,7 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
         try:
             user = self.request.user
 
-            serializer = LecturerDataSerializer(user)
+            serializer = LecturerDataSerializer(user, context={'request': self.request})
             return Response(serializer.data)
     
         except:
@@ -182,7 +182,7 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
         try:
             user = self.request.user
 
-            serializer = LecturerDataSerializer(user)
+            serializer = LecturerDataSerializer(user, context={'request': self.request})
             return Response(serializer.data)
     
         except:
@@ -257,7 +257,7 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
                 groups__name__in=user_group_names
             )
 
-            serializer = UserSerializer(students, many=True)
+            serializer = UserSerializer(students, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
         except:
@@ -270,7 +270,7 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
             
             student = User.objects.get(id=student_id)
 
-            serializer = StudentDataSerializer(student)
+            serializer = StudentDataSerializer(student, context={'request': self.request})
             return Response(serializer.data)
     
         # except:
@@ -328,7 +328,7 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
                 groups__name="Lecturer"
             ).distinct()
 
-            serializer = LecturerDataSerializer(lecturers, many=True)
+            serializer = LecturerDataSerializer(lecturers, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
         except:
@@ -343,7 +343,7 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
                 Q(groups__name="Lecturer") | Q(groups__name="Secretary")
             ).distinct()
 
-            serializer = UserGroupsSerializer(lecturers_and_secretaries, many=True)
+            serializer = UserGroupsSerializer(lecturers_and_secretaries, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
         except:
@@ -361,7 +361,7 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
             group = Group.objects.get(name=group_name)
             user.groups.add(group)
 
-            serializer = UserGroupsSerializer(user)
+            serializer = UserGroupsSerializer(user, context={'request': self.request})
             return Response(serializer.data)
     
         except:
@@ -379,7 +379,7 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
             group = Group.objects.get(name=group_name)
             user.groups.remove(group)
 
-            serializer = UserGroupsSerializer(user)
+            serializer = UserGroupsSerializer(user, context={'request': self.request})
             return Response(serializer.data)
     
         except:
