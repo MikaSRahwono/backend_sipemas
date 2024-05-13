@@ -406,12 +406,12 @@ class UserViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=['GET'], url_path='roles')
     def roles(self, request, pk=None):
-        # try:
+        try:
             user = self.request.user
 
             serializer = GroupsSerializer(user)
             return Response(serializer.data)
     
-        # except:
-        #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

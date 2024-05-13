@@ -354,12 +354,14 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
         try:            
             user = User.objects.get(id=user_id)
 
-            group_name = request.data.get('group_name')
-            if not group_name:
+            group_names = request.data.get('group_names')
+
+            if not group_names:
                 return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
 
-            group = Group.objects.get(name=group_name)
-            user.groups.add(group)
+            for group_name in group_names:
+                group = Group.objects.get(name=group_name['id'])
+                user.groups.add(group)
 
             serializer = UserGroupsSerializer(user, context={'request': self.request})
             return Response(serializer.data)
@@ -372,12 +374,14 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
         try:            
             user = User.objects.get(id=user_id)
 
-            group_name = request.data.get('group_name')
-            if not group_name:
-                return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
+            group_names = request.data.get('group_names')
 
-            group = Group.objects.get(name=group_name)
-            user.groups.remove(group)
+            if not group_names:
+                return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            for group_name in group_names:
+                group = Group.objects.get(name=group_name['id'])
+                user.groups.remove(group)
 
             serializer = UserGroupsSerializer(user, context={'request': self.request})
             return Response(serializer.data)

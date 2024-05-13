@@ -183,15 +183,20 @@ class UserGroupsSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         user = User.objects.get(id=instance.id)
 
-        unwanted_group_names = ["Lecturer", "Student", "Secretary"]
-        user_group_names = [group.name for group in user.groups.all() if group.name not in unwanted_group_names]
+        role_names = ["Lecturer", "Student", "Secretary"]
+        user_group_names = [group.name for group in user.groups.all()]
 
         organizations = []
-        for org in user_group_names:
-            organization = Organization.objects.get(id=org)
-            serializer = OrganizationSerializer(organization)
-            organizations.append(serializer.data)
+        roles = []
+        for role in user_group_names:
+            if role in role_names:
+                roles.append(role)
+            else:
+                organization = Organization.objects.get(id=role)
+                serializer = OrganizationSerializer(organization)
+                organizations.append(serializer.data)
         data['organizations'] = organizations
+        data['roles'] = roles
 
         return data
     
