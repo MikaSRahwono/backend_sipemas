@@ -285,7 +285,11 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Application already declined'}, status=status.HTTP_200_OK)
 
         application_approval.is_approved = False
-        application_approval.approval_status = -1
+        all_application_approvals = ApplicationApproval.objects.filter(application=application_approval.application)
+
+        for approval in all_application_approvals:
+            approval.approval_status = -1
+
         application.is_approved = False
         application_approval.save()
         application.save()
@@ -372,7 +376,12 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Topic Request already declined'}, status=status.HTTP_200_OK)
 
         topic_approval.is_approved = False
-        topic_approval.approval_status = -1
+
+        all_topic_approvals = TopicRequestApproval.objects.filter(topic_request=topic_approval.topic_request)
+
+        for approval in all_topic_approvals:
+            approval.approval_status = -1
+
         topic_request.is_approved = False
         topic_approval.save()
         topic_request.save()
