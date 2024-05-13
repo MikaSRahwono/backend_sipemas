@@ -265,7 +265,7 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
         
     @action(detail=False, methods=['GET'], url_path='students/(?P<student_id>\d+)')
     def student_profile(self, request, student_id=None):
-        # try:
+        try:
             user = self.request.user
             
             student = User.objects.get(id=student_id)
@@ -273,8 +273,8 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
             serializer = StudentDataSerializer(student, context={'request': self.request})
             return Response(serializer.data)
     
-        # except:
-        #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
 class ManagerDashboardViewSet(viewsets.GenericViewSet):

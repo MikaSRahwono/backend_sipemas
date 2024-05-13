@@ -45,7 +45,22 @@ class UsersViewSet(viewsets.ModelViewSet):
     def available_groups(self, request, pk=None):
         try:
             group_names = Group.objects.values_list('name', flat=True)
-            group_names_list = list(group_names)
+            group_names_list = {}
+
+            role_names = ["Lecturer", "Student", "Secretary"]
+            group_names = Group.objects.values_list('name', flat=True)
+
+            organizations = []
+            roles = []
+            for role in group_names:
+                if role in role_names:
+                    roles.append(role)
+                else:
+                    organization = Organization.objects.get(id=role)
+                    serializer = OrganizationSerializer(organization)
+                    organizations.append(serializer.data)
+            group_names_list['organizations'] = organizations
+            group_names_list['roles'] = roles
             return Response(group_names_list)
         except:
             return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
