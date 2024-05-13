@@ -90,18 +90,25 @@ class LecturerDataSerializer(serializers.ModelSerializer):
             Q(approvee=lecturer) &
             (Q(approval_status=0) | Q(approval_status=1))
         )
-        not_all_approved_topic_requests_approvals = TopicRequestApproval.objects.filter(
+        not_all_approved_topic_request_approvals = TopicRequestApproval.objects.filter(
             Q(approvee=lecturer) &
             (Q(approval_status=0) | Q(approval_status=1))
         )
-        data['approval_pending'] = len(not_all_approved_application_approvals) + len(not_all_approved_topic_requests_approvals)
+        data['approval_pending'] = len(not_all_approved_application_approvals) + len(not_all_approved_topic_request_approvals)
         
-        topic_request_approvals = []
-        for topic_request_approval in not_all_approved_topic_requests_approvals:
+        pending_topic_request_approval = []
+        for topic_request_approval in not_all_approved_topic_request_approvals:
             topic_request_serializer = TopicRequestApprovalSerializer(topic_request_approval)
-            topic_request_approvals.append(topic_request_serializer.data)
+            pending_topic_request_approval.append(topic_request_serializer.data)
 
-        data['topic_request_approvals'] = topic_request_approvals
+        data['not_all_approved_topic_request_approvals'] = pending_topic_request_approval
+
+        all_topic_request_approvals = TopicRequestApproval.objects.filter(
+            approvee=lecturer
+        )
+        all_topic_request_approval_serializer = TopicRequestApprovalSerializer(all_topic_request_approvals, many=True)
+
+        data['all_topic_request_approvals'] = all_topic_request_approval_serializer.data
 
         topics = Topic.objects.filter(supervisors=lecturer)
         topic_serializer = TopicListSerializer(topics, many=True)
