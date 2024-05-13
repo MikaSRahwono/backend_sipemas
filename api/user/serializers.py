@@ -76,3 +76,32 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'user_detail', 'user_profile']
 
+class GroupsSerializer(serializers.ModelSerializer):
+    user_detail = UserDetailSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'user_detail']
+        depth = 1
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = User.objects.get(id=instance.id)
+
+        role_names = ["Lecturer", "Student", "Secretary"]
+        user_group_names = [group.name for group in user.groups.all()]
+
+        organizations = []
+        roles = []
+        for role in user_group_names:
+            if role in role_names:
+                roles.append(role)
+            else:
+                organization = Organization.objects.get(id=role)
+                serializer = OrganizationSerializer(organization)
+                organizations.append(serializer.data)
+        data['organizations'] = organizations
+        data['roles'] = roles
+
+        return data
+

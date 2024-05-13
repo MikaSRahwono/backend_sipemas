@@ -403,4 +403,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 
         except IntegrityError as e:
             return Response({'error': 'Integrity Error: {}'.format(str(e))}, status=status.HTTP_400_BAD_REQUEST)
+        
+    @action(detail=False, methods=['GET'], url_path='roles')
+    def roles(self, request, pk=None):
+        # try:
+            user = self.request.user
+
+            serializer = GroupsSerializer(user)
+            return Response(serializer.data)
+    
+        # except:
+        #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
