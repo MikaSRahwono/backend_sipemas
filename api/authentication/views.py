@@ -22,8 +22,126 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
-class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):    
+class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
+        def create_user_student(sso_data, email, username, password, user):
+            prodi  = sso_data['kode_org'].split(":")[0]
+            full_name =  sso_data['nama']
+            id_code =  sso_data['kodeidentitas']
+            organization_class = Organization.objects.get(id = prodi)
+            
+            user_detail = {
+                'email': email,
+                'role' : 'STU',
+                'is_external': False,
+                'full_name': full_name,
+                'id_code': id_code
+            }
+
+            user_profile = {
+                'about': '',
+                'line_id': '',
+                'linkedin_url': '',
+                'github_url': '',
+                'instagram_url': '',
+                'website_url': '',
+                'is_open': True,
+                'github_url': '',
+            }
+
+            detail_serializer = UserDetailSerializer(data=user_detail)
+            profile_serializer = UserProfileSerializer(data=user_profile)
+
+            if detail_serializer.is_valid() & profile_serializer.is_valid():
+                group = Group.objects.get(name='Student')
+                org = Group.objects.get(name=prodi)
+
+                user.groups.add(group)
+                user.groups.add(org)
+                detail_serializer.save(user=user, organization=organization_class)
+                profile_serializer.save(user=user)
+
+                serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
+                serializer.is_valid(raise_exception=True)
+                token_data = serializer.validated_data
+                refresh_token = RefreshToken.for_user(user)
+                access_token = token_data['access']
+
+                return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
+            else:
+                return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+     
+        def create_user_lecturer(sso_data, email, username, password, user):
+            full_name =  sso_data['nama']
+            id_code =  sso_data['kodeidentitas']
+
+            user_detail = {
+                'email': email,
+                'role' : 'LEC',
+                'is_external': False,
+                'full_name': full_name,
+                'id_code': id_code
+            }
+
+            user_profile = {
+                'about': '',
+                'line_id': '',
+                'linkedin_url': '',
+                'github_url': '',
+                'instagram_url': '',
+                'website_url': '',
+                'is_open': True,
+                'github_url': '',
+            }
+
+            detail_serializer = UserDetailSerializer(data=user_detail)
+            profile_serializer = UserProfileSerializer(data=user_profile)
+
+            if detail_serializer.is_valid() & profile_serializer.is_valid():
+                group = Group.objects.get(name='Lecturer')
+
+                user.groups.add(group)
+                detail_serializer.save(user=user)
+                profile_serializer.save(user=user)
+
+                serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
+                serializer.is_valid(raise_exception=True)
+                token_data = serializer.validated_data
+                refresh_token = RefreshToken.for_user(user)
+                access_token = token_data['access']
+
+                return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
+            else:
+                return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        def create_user_secretary(sso_data, email, username, password, user):
+            full_name =  sso_data['nama']
+            id_code =  sso_data['kodeidentitas']
+            
+            user_detail = {
+                'email': email,
+                'role' : 'SEC',
+                'is_external': False,
+                'full_name': full_name,
+                'id_code': id_code
+            }
+            serializer = UserDetailSerializer(data=user_detail)
+            if serializer.is_valid():
+                group = Group.objects.get(name='Secretary')
+
+                user.groups.add(group)
+                serializer.save(user=user)
+
+                serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
+                serializer.is_valid(raise_exception=True)
+                token_data = serializer.validated_data
+                refresh_token = RefreshToken.for_user(user)
+                access_token = token_data['access']
+
+                return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         username = request.data['username']
         password = request.data['password']
 
@@ -38,120 +156,11 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             email = f'{username}@ui.ac.id'
             user = User.objects.create_user(username=username, password=password, email=email)
             if sso_data['nama_role'] == 'mahasiswa':
-                prodi  = sso_data['kode_org'].split(":")[0]
-                full_name =  sso_data['nama']
-                id_code =  sso_data['kodeidentitas']
-                organization_class = Organization.objects.get(id = prodi)
-                
-                user_detail = {
-                    'email': email,
-                    'role' : 'STU',
-                    'is_external': False,
-                    'full_name': full_name,
-                    'id_code': id_code
-                }
-
-                user_profile = {
-                    'about': '',
-                    'line_id': '',
-                    'linkedin_url': '',
-                    'github_url': '',
-                    'instagram_url': '',
-                    'website_url': '',
-                    'is_open': True,
-                    'github_url': '',
-                }
-
-                detail_serializer = UserDetailSerializer(data=user_detail)
-                profile_serializer = UserProfileSerializer(data=user_profile)
-
-                if detail_serializer.is_valid() & profile_serializer.is_valid():
-                    group = Group.objects.get(name='Student')
-                    org = Group.objects.get(name=prodi)
-
-                    user.groups.add(group)
-                    user.groups.add(org)
-                    detail_serializer.save(user=user, organization=organization_class)
-                    profile_serializer.save(user=user)
-
-                    serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
-                    serializer.is_valid(raise_exception=True)
-                    token_data = serializer.validated_data
-                    refresh_token = RefreshToken.for_user(user)
-                    access_token = token_data['access']
-
-                    return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
-                else:
-                    return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return create_user_student(sso_data, email, username, password, user)
             elif sso_data['nama_role'] == 'dosen':
-                full_name =  sso_data['nama']
-                id_code =  sso_data['kodeidentitas']
-
-                user_detail = {
-                    'email': email,
-                    'role' : 'LEC',
-                    'is_external': False,
-                    'full_name': full_name,
-                    'id_code': id_code
-                }
-
-                user_profile = {
-                    'about': '',
-                    'line_id': '',
-                    'linkedin_url': '',
-                    'github_url': '',
-                    'instagram_url': '',
-                    'website_url': '',
-                    'is_open': True,
-                    'github_url': '',
-                }
-
-                detail_serializer = UserDetailSerializer(data=user_detail)
-                profile_serializer = UserProfileSerializer(data=user_profile)
-
-                if detail_serializer.is_valid() & profile_serializer.is_valid():
-                    group = Group.objects.get(name='Lecturer')
-
-                    user.groups.add(group)
-                    detail_serializer.save(user=user)
-                    profile_serializer.save(user=user)
-
-                    serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
-                    serializer.is_valid(raise_exception=True)
-                    token_data = serializer.validated_data
-                    refresh_token = RefreshToken.for_user(user)
-                    access_token = token_data['access']
-
-                    return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
-                else:
-                    return Response(detail_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return create_user_lecturer(sso_data, email, username, password, user)
             else:
-                full_name =  sso_data['nama']
-                id_code =  sso_data['kodeidentitas']
-                
-                user_detail = {
-                    'email': email,
-                    'role' : 'SEC',
-                    'is_external': False,
-                    'full_name': full_name,
-                    'id_code': id_code
-                }
-                serializer = UserDetailSerializer(data=user_detail)
-                if serializer.is_valid():
-                    group = Group.objects.get(name='Secretary')
-
-                    user.groups.add(group)
-                    serializer.save(user=user)
-
-                    serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
-                    serializer.is_valid(raise_exception=True)
-                    token_data = serializer.validated_data
-                    refresh_token = RefreshToken.for_user(user)
-                    access_token = token_data['access']
-
-                    return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)})
-                else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return create_user_secretary(sso_data, email, username, password, user)
 
         elif count_users == 1:
             user = authenticate(request, username=username, password=password)

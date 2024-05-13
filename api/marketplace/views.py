@@ -160,7 +160,7 @@ class TopicViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         except Topic.DoesNotExist:
-                return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
         
     @action(detail=False, methods=['POST'], url_path='request')
     def request(self, request, pk=None):
@@ -265,6 +265,7 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Application already approved'}, status=status.HTTP_200_OK)
 
         application_approval.is_approved = True
+        application_approval.approval_status = 1
         application_approval.save()
 
         application_approved_signal.send(sender=ApplicationApproval, application_approval=application_approval, user=user)
@@ -284,6 +285,7 @@ class ApplicationApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Application already declined'}, status=status.HTTP_200_OK)
 
         application_approval.is_approved = False
+        application_approval.approval_status = -1
         application.is_approved = False
         application_approval.save()
         application.save()
@@ -350,6 +352,7 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Topic Request already approved'}, status=status.HTTP_200_OK)
 
         topic_approval.is_approved = True
+        topic_approval.approval_status = 1
         topic_approval.save()
 
         topic_request_approved_signal.send(sender=TopicRequestApproval, topic_request_approval=topic_approval, user=user)
@@ -369,6 +372,7 @@ class TopicRequestApprovalViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Topic Request already declined'}, status=status.HTTP_200_OK)
 
         topic_approval.is_approved = False
+        topic_approval.approval_status = -1
         topic_request.is_approved = False
         topic_approval.save()
         topic_request.save()
