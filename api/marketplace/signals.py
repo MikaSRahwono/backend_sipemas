@@ -26,21 +26,21 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         application_approvals = ApplicationApproval.objects.filter(approvee=supervisee)
 
         for approval in topic_request_approvals:
-            if approval.approval_status == 0 and approval.approval_status == 1 and approval.topic_request != topic_request:
+            if (approval.approval_status == 0 or approval.approval_status == 1) and approval.topic_request != topic_request:
                 approval.topic_request.is_approved = False
                 approval.approval_status = 3
                 approval.save()
                 approval.topic_request.save()
 
         for approval in application_approvals:
-            if approval.approval_status == 0 and approval.approval_status == 1:
+            if approval.approval_status == 0 or approval.approval_status == 1:
                 approval.application.is_approved = False
                 approval.approval_status = 3
                 approval.save()
                 approval.application.save()
 
 
-    topic_request_approval = TopicRequestApproval.objects.get(id=topic_request_approval)
+    topic_request_approval = TopicRequestApproval.objects.get(id=topic_request_approval.id)
     topic_request_approval.approval_status = 1
     topic_request_approval.save()
 
@@ -84,7 +84,8 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         activity.save()
 
         if topic_request.course.course_type == 'OO':
-            for supervisee in activity.supervisees:
+            restrict_other_requests(user)
+            for supervisee in activity.supervisees.all():
                 restrict_other_requests(supervisee)
 
         topic_request_approvals = TopicRequestApproval.objects.filter(topic_request=topic_request)
@@ -115,21 +116,21 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         application_approvals = ApplicationApproval.objects.filter(approvee=supervisee)
 
         for approval in topic_request_approvals:
-            if approval.approval_status == 0 and approval.approval_status == 1:
+            if approval.approval_status == 0 or approval.approval_status == 1:
                 approval.topic_request.is_approved = False
                 approval.approval_status = 3
                 approval.save()
                 approval.topic_request.save()
 
         for approval in application_approvals:
-            if approval.approval_status == 0 and approval.approval_status == 1 and approval.application != application:
+            if (approval.approval_status == 0 or approval.approval_status == 1) and approval.application != application:
                 approval.application.is_approved = False
                 approval.approval_status = 3
                 approval.save()
                 approval.application.save()
 
 
-    application_approval = ApplicationApproval.objects.get(id=application_approval)
+    application_approval = ApplicationApproval.objects.get(id=application_approval.id)
     application_approval.approval_status = 1
     application_approval.save()
 
@@ -156,7 +157,8 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         activity.supervisors.add(*application.topic.supervisors.all())
 
         if application.topic.course.course_type == 'OO':
-            for supervisee in activity.supervisees:
+            restrict_other_requests(user)
+            for supervisee in activity.supervisees.all():
                 restrict_other_requests(supervisee)
 
         application_application_approvals = ApplicationApproval.objects.filter(application=application)

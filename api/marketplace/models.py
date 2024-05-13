@@ -41,7 +41,8 @@ class ApplicationApproval(models.Model):
         DECLINED = -1
         WAITING = 0
         ACCEPTED = 1
-        MOVED = 2
+        ALL_ACCEPTED = 2
+        MOVED = 3
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
     approvee = models.ForeignKey(User, on_delete=models.CASCADE)
     is_approved = models.BooleanField(null=True)
