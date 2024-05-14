@@ -2,15 +2,10 @@ FROM python:3.11.8
 
 # Install dependencies
 RUN apt-get update -qq && apt-get install -y -qq \
-    gdal-bin binutils libproj-dev libgdal-dev cmake && \
+    gdal-bin binutils libproj-dev libgdal-dev cmake postgresql-client && \
     apt-get clean all && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
-
-RUN apt-get update \
-    && apt-get install -y postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
-
 
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
