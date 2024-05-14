@@ -15,7 +15,4 @@ python manage.py loaddata api/user/fixtures/organization.json --settings=backend
 
 python manage.py seed_groups --settings=backend_sipemas.settings.stage
 
-echo "Running app1 management commands"
-python manage.py sample_management_command
-
 exec "$@"
