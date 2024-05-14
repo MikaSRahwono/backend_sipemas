@@ -14,7 +14,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 
 from api.activity.models import Activity
-from api.permissions import IsAdmin, IsSecretary, ReadOnlyOrAdmin, IsLecturer
+from api.permissions import IsManager, IsSecretary, IsLecturer
 
 from .signals import application_approved_signal, topic_request_approved_signal, create_application_approval_signal, create_request_approval_signal
 

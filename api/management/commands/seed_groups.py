@@ -8,6 +8,7 @@ class Command(BaseCommand):
         Group.objects.get_or_create(name='Lecturer')
         Group.objects.get_or_create(name='Student')
         Group.objects.get_or_create(name='Secretary')
+        Group.objects.get_or_create(name='Manager')
         Group.objects.get_or_create(name='01.00.12.01')
         Group.objects.get_or_create(name='02.00.12.01')
         Group.objects.get_or_create(name='03.00.12.01')

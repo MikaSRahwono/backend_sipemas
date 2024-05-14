@@ -18,7 +18,7 @@ from django.db import IntegrityError
 import django_filters
 
 from api.marketplace.serializers import ApplicationApprovalSerializer, ApplicationSerializer, TopicListSerializer, TopicRequestApprovalSerializer, TopicRequestSerializer
-from api.permissions import IsAdminOrIsSelf, IsAdmin, IsLecturer, IsSelf
+from api.permissions import IsManager, IsLecturer, IsSelf
 
 from .models import *
 from .serializers import *
@@ -41,13 +41,13 @@ class UsersViewSet(viewsets.ModelViewSet):
     filterset_class = UserFilter
     permission_classes = (IsAuthenticated,)
     
-    @action(detail=False, methods=['GET'], url_path='available_groups', permission_classes=[IsAdmin])
+    @action(detail=False, methods=['GET'], url_path='available_groups', permission_classes=[IsManager])
     def available_groups(self, request, pk=None):
         try:
             group_names = Group.objects.values_list('name', flat=True)
             group_names_list = {}
 
-            role_names = ["Lecturer", "Student", "Secretary"]
+            role_names = ["Lecturer", "Student", "Secretary", "Manager"]
             group_names = Group.objects.values_list('name', flat=True)
 
             organizations = []

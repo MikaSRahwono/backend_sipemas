@@ -88,7 +88,7 @@ class GroupsSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         user = User.objects.get(id=instance.id)
 
-        role_names = ["Lecturer", "Student", "Secretary"]
+        role_names = ["Lecturer", "Student", "Secretary", "Manager"]
         user_group_names = [group.name for group in user.groups.all()]
 
         organizations = []

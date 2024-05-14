@@ -17,7 +17,7 @@ from api.dashboard.models import Note
 from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer, UserGroupsSerializer
 from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequestApproval
 from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
-from api.permissions import IsAdmin, IsLecturer, IsSecretary
+from api.permissions import IsManager, IsLecturer, IsSecretary
 from api.user.serializers import UserSerializer
 from api.user.models import User
 
@@ -280,7 +280,7 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
 class ManagerDashboardViewSet(viewsets.GenericViewSet):
     serializer_class = ActivitySerializer
     model = Activity
-    permission_classes = (IsAdmin, IsAuthenticated,)
+    permission_classes = [IsManager]
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
