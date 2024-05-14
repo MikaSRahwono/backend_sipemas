@@ -120,7 +120,7 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
         
     @action(detail=False, methods=['GET'], url_path='student_no_activity/(?P<kd_mk>\w+)')
     def student_no_activity(self, request, kd_mk=None):
-        # try:
+        try:
             user = self.request.user
             group = Group.objects.get(name='Student')
             students = User.objects.filter(groups=group)
@@ -142,8 +142,8 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
             serializer = UserSerializer(student_no_activity_data, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
-        # except:
-        #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except:
+            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @action(detail=False, methods=['GET'], url_path='lecturers')
     def lecturer(self, request, pk=None):
