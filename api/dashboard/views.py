@@ -9,7 +9,7 @@ from django.db.models import Q
 
 
 from api.academic.models import AssignmentComponent, Course
-from api.academic.serializers import AssignmentComponentSerializer
+from api.academic.serializers import AssignmentComponentSerializer, CourseSerializer
 from api.activity.models import Activity
 from api.activity.serializers import ActivitySerializer
 from api.dashboard.filters import ActivityFilter
@@ -19,7 +19,7 @@ from api.marketplace.models import Application, ApplicationApproval, Topic, Topi
 from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
 from api.permissions import IsManager, IsLecturer, IsSecretary
 from api.user.serializers import UserSerializer
-from api.user.models import User
+from api.user.models import Organization, User
 
 # Create your views here.
 
@@ -120,13 +120,15 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
         
     @action(detail=False, methods=['GET'], url_path='student_no_activity/(?P<kd_mk>\w+)')
     def student_no_activity(self, request, kd_mk=None):
-        try:
+        # try:
             user = self.request.user
             group = Group.objects.get(name='Student')
             students = User.objects.filter(groups=group)
             course = Course.objects.get(kd_mk=kd_mk)
 
-            user_group_names = [group.name for group in user.groups.all()]
+            allowed_organizations = course.allowed_organizations.all()
+
+            user_group_names = [group.name for group in Group.objects.filter(name__in=allowed_organizations)]
             students_per_organizations = students.filter(
                 groups__name__in=user_group_names
             ).distinct()
@@ -140,8 +142,8 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
             serializer = UserSerializer(student_no_activity_data, context={'request': self.request}, many=True)
             return Response(serializer.data)
     
-        except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # except:
+        #     return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     @action(detail=False, methods=['GET'], url_path='lecturers')
     def lecturer(self, request, pk=None):
