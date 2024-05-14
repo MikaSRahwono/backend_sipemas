@@ -32,6 +32,8 @@ class ActivitySerializer(serializers.ModelSerializer):
     supervisors = SupervisorSerializer(read_only=True, many=True)
     supervisees = SuperviseesSerializer(read_only=True, many=True)
 
+    step_completion = StepCompletionSerializer(source='stepcompletions', read_only=True, many=True)
+
     topic = TopicListSerializer(read_only=True)
 
     class Meta:
