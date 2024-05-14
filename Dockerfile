@@ -8,5 +8,5 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /backend_sipemas
 COPY . /backend_sipemas
 RUN pip install -r requirements.txt
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
