@@ -14,16 +14,16 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /backend_sipemas
 
 # Copy only the requirements file first to leverage Docker cache
-COPY requirements.txt /backend_sipemas/requirements.txt
+COPY backend_sipemas/requirements.txt /backend_sipemas/requirements.txt
 
 # Install Python dependencies
 RUN pip install -r requirements.txt
 
 # Copy the rest of the application code
-COPY . /backend_sipemas
+COPY backend_sipemas /backend_sipemas
 
 # Copy the entrypoint script and make it executable
-COPY entrypoint.sh /entrypoint.sh
+COPY backend_sipemas/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Specify the entrypoint
