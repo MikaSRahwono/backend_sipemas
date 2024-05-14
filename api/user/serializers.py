@@ -81,7 +81,7 @@ class GroupsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'user_detail']
+        fields = ['id', 'username', 'email', 'is_superuser', 'user_detail']
         depth = 1
 
     def to_representation(self, instance):

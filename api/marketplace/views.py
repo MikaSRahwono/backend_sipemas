@@ -48,10 +48,7 @@ class TopicViewSet(viewsets.ModelViewSet):
         
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
-            if self.request.method == 'GET':
-                return [IsAuthenticated()]
-            else:
-                return [IsLecturer()]
+            return [IsLecturer()]
         elif self.action in ['apply', 'request']:
             return [IsAuthenticated()]
         elif self.action in ['all_requests']:
