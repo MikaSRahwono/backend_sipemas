@@ -196,8 +196,6 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
             
             activities = super().get_queryset().filter(supervisors=user)
 
-            print(activities)
-
             serializer = StudentActivitySerializer(activities, context={'request': self.request}, many=True)
             return Response(serializer.data)
     

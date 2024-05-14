@@ -192,7 +192,6 @@ class TopicViewSet(viewsets.ModelViewSet):
     def all_requests(self, request, pk=None):
         try:
             user = self.request.user
-            print(user)
             topic_requests = TopicRequest.objects.all()
             serializer = TopicRequestSerializer(topic_requests, many=True, context={'request': self.request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
