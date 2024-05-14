@@ -7,6 +7,11 @@ RUN apt-get update -qq && apt-get install -y -qq \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /var/cache/apt/*
 
+RUN apt-get update \
+    && apt-get install -y postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Set environment variables
 ENV PYTHONUNBUFFERED 1
 
