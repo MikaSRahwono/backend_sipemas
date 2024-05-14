@@ -29,6 +29,6 @@ services:
     volumes:
       - .:/backend_sipemas
     depends_on:
-      web_app_db:
+      sipemas-db:
         condition: service_healthy
     restart: on-failure
