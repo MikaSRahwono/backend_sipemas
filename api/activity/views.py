@@ -14,7 +14,6 @@ from api.activity.models import Activity, FileSubmission, LogSubmission
 from api.activity.serializers import ActivitySerializer, FileSubmissionSerializer, LogSubmissionSerializer, StepCompletionSerializer
 from api.activity.signals import activity_complete_step
 
-# Create your views here.
 class ActivityViewSet(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     serializer_class = ActivitySerializer
     model = Activity
