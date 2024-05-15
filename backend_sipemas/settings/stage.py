@@ -4,7 +4,7 @@ import datetime
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'psipmks').split(',')
 
 INTERNAL_IPS = [
     '127.0.0.1',
@@ -23,7 +23,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_NAME'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('POSTGRES_HOST'),
-        'PORT': os.getenv('POSTGRES_PORT'),
+        'HOST': os.getenv('DB_HOST', 'sipemas-db'),
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
