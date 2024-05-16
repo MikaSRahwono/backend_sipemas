@@ -3,6 +3,8 @@ import os
 import datetime
 
 # SECURITY WARNING: don't run with debug turned on in production!
+print(os.getenv('ALLOWED_HOSTS', '').split(','))
+
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 DEBUG = False
 
