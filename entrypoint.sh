@@ -9,4 +9,4 @@ python manage.py loaddata api/user/fixtures/organization.json --settings=backend
 
 python manage.py seed_groups --settings=backend_sipemas.settings.stage
 
-exec "$@"
+exec gunicorn backend_sipemas.wsgi:application --bind 0.0.0.0:${DJANGO_PORT}
