@@ -8,9 +8,6 @@ print(os.getenv('ALLOWED_HOSTS', '').split(','))
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 DEBUG = False
 
-INTERNAL_IPS = [
-    '127.0.0.1',
-]
 CORS_ALLOW_ALL_ORIGINS = True
 
 SIMPLE_JWT = {
