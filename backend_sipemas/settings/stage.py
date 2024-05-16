@@ -8,8 +8,6 @@ print(os.getenv('ALLOWED_HOSTS', '').split(','))
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 DEBUG = False
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=120),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=7),
