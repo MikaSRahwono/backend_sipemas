@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ -z "$ALLOWED_HOSTS" ]; then
+  echo "Error: ALLOWED_HOSTS environment variable is not set."
+  exit 1
+fi
+
 echo "Running Database Migrations"
 python manage.py makemigrations --settings=backend_sipemas.settings.stage
 
