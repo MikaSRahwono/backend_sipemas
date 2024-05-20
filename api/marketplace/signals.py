@@ -55,6 +55,8 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
     if all_approved and is_no_restricted:     
         topic_request.is_approved = True
         topic_request.save()
+        topic_request.course.topic_count += 1
+        topic_request.course.save()
         topic = Topic.objects.create(
             course = topic_request.course,
             title = topic_request.title,

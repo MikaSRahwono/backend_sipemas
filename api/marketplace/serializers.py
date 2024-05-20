@@ -68,6 +68,9 @@ class TopicListSerializer(serializers.ModelSerializer):
             supervisorsInstances.append(User.objects.get(id = supervisor['id']))
         topic.supervisors.set(supervisorsInstances)
 
+        topic.course.topic_count += 1
+        topic.course.save()
+
         return topic
     
     def update(self, instance, validated_data):

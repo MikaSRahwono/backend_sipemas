@@ -1,3 +1,4 @@
+from api.academic.serializers import CourseSerializer
 from api.marketplace.serializers import SupervisorSerializer, TopicListSerializer, UserDetailSerializer, UserProfileSerializer
 from rest_framework import serializers
 from .models import *
@@ -35,6 +36,8 @@ class ActivitySerializer(serializers.ModelSerializer):
     step_completion = StepCompletionSerializer(source='stepcompletions', read_only=True, many=True)
 
     topic = TopicListSerializer(read_only=True)
+
+    course = CourseSerializer(read_only=True)
 
     class Meta:
         model = Activity

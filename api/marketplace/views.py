@@ -53,6 +53,11 @@ class TopicViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         elif self.action in ['all_requests']:
             return [IsLecturer(), IsSecretary()]
+        elif self.action in ['information']:
+            if self.request.method == 'GET':
+                return []
+            else:
+                return [IsLecturer()]
         return []
     
     def get_object(self, pk):

@@ -349,7 +349,7 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
         except:
             return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-    @action(detail=False, methods=['POST'], url_path='user_roles/(?P<user_id>\d+)/add')
+    @action(detail=False, methods=['POST', 'PUT'], url_path='user_roles/(?P<user_id>\d+)/add')
     def add_user_roles(self, request, user_id=None):
         try:            
             user = User.objects.get(id=user_id)
@@ -359,29 +359,10 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
             if not group_names:
                 return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
 
+            user.groups.clear()
             for group_name in group_names:
                 group = Group.objects.get(name=group_name['id'])
                 user.groups.add(group)
-
-            serializer = UserGroupsSerializer(user, context={'request': self.request})
-            return Response(serializer.data)
-    
-        except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    @action(detail=False, methods=['POST'], url_path='user_roles/(?P<user_id>\d+)/remove')
-    def remove_user_roles(self, request, user_id=None):
-        try:            
-            user = User.objects.get(id=user_id)
-
-            group_names = request.data.get('group_names')
-
-            if not group_names:
-                return Response({"error": "group_name is required in the request body"}, status=status.HTTP_400_BAD_REQUEST)
-            
-            for group_name in group_names:
-                group = Group.objects.get(name=group_name['id'])
-                user.groups.remove(group)
 
             serializer = UserGroupsSerializer(user, context={'request': self.request})
             return Response(serializer.data)
