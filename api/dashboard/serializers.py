@@ -144,7 +144,10 @@ class StudentDataSerializer(serializers.ModelSerializer):
         student = User.objects.get(id=instance.id)
 
         activity = Activity.objects.filter(supervisees=student, is_completed=None).first()
-        data['currently_taken_course'] = activity.course.nm_mk
+        if activity is not None:
+            data['currently_taken_course'] = activity.course.nm_mk
+        else:
+            data['currently_taken_course'] = ""
 
         topic_requests_created = TopicRequest.objects.filter(
             Q(creator=student)
@@ -153,16 +156,16 @@ class StudentDataSerializer(serializers.ModelSerializer):
             Q(approvee=student)
         )
 
-        topic_requested = []
+        topics_requested = []
         for topic_request in topic_requests_created:
             topic_request_serializer = TopicRequestSerializer(topic_request)
-            topic_requested.append(topic_request_serializer.data)
+            topics_requested.append(topic_request_serializer.data)
         for approval in topic_requested_approvals:
             topic_request_serializer = TopicRequestSerializer(approval.topic_request)
-            topic_requested.append(topic_request_serializer.data)
+            topics_requested.append(topic_request_serializer.data)
         
-        data['topic_requested_count'] = len(topic_requested) + len(topic_requests_created)
-        data['topic_requested'] = topic_requested
+        data['topic_requested_count'] = len(topics_requested) + len(topic_requests_created)
+        data['topic_requested'] = topics_requested
 
         activities = Activity.objects.filter(supervisees=student, is_completed=None)
         activity_serializer = ActivitySerializer(activities, many=True)
