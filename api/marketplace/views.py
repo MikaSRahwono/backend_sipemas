@@ -71,6 +71,14 @@ class TopicViewSet(viewsets.ModelViewSet):
         serializer = TopicDetailSerializer(topic, context={'request': self.request})
         return Response(serializer.data)
     
+    def destroy(self, request, pk):
+        user = self.request.user
+        topic = self.get_object(pk)
+        if topic.creator != user:
+            return Response({"error": f"{user.email} doesn't hane permission to delete topics created by {topic.creator.email}"}, status=status.HTTP_400_BAD_REQUEST)
+        topic.delete()
+        return Response({"success": "Topic deleted"}, status=status.HTTP_200_OK)
+    
     def create(self, request, *args, **kwargs):
         user = self.request.user
 
