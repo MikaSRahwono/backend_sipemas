@@ -20,8 +20,13 @@ from ..marketplace.models import Field
 # Create your views here.
 class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
-        if self.action in ['create', 'update', 'destroy', 'information']:
+        if self.action in ['create', 'update', 'destroy']:
             return [IsManager()]
+        if self.action in ['information']:
+            if self.request.method == 'GET':
+                return []
+            else:
+                return [IsManager()]
         return []
     
     serializer_class = CourseSerializer
