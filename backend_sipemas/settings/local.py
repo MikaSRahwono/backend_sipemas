@@ -10,7 +10,10 @@ INTERNAL_IPS = [
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
+STATIC_ROOT = BASE_DIR / 'media'
+STATIC_URL = '/static/'
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
