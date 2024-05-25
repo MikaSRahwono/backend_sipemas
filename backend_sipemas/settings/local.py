@@ -9,6 +9,7 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 SIMPLE_JWT = {
