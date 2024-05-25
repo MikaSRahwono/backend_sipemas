@@ -246,35 +246,19 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
            
     @action(detail=False, methods=['GET'], url_path='students')
     def students(self, request, pk=None):
-        try:
-            user = self.request.user
-            
-            user_group_names = [group.name for group in user.groups.all()]
-            students = User.objects.filter(
-                groups__name="Student"
-            ).distinct()
-            students = students.filter(
-                groups__name__in=user_group_names
-            )
+        students = User.objects.filter(
+            groups__name="Student"
+        ).distinct()
 
-            serializer = UserSerializer(students, context={'request': self.request}, many=True)
-            return Response(serializer.data)
-    
-        except:
-            return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        serializer = UserSerializer(students, context={'request': self.request}, many=True)
+        return Response(serializer.data)
         
     @action(detail=False, methods=['GET'], url_path='students/(?P<student_id>\d+)')
     def student_profile(self, request, student_id=None):
-        # try:
-            user = self.request.user
-            
-            student = User.objects.get(id=student_id)
+        student = User.objects.get(id=student_id)
 
-            serializer = StudentDataSerializer(student, context={'request': self.request})
-            return Response(serializer.data)
-    
-        # except:
-            # return Response({"error": "There's Something Wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        serializer = StudentDataSerializer(student, context={'request': self.request})
+        return Response(serializer.data)
         
         
 class ManagerDashboardViewSet(viewsets.GenericViewSet):

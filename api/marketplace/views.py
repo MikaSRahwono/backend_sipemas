@@ -158,9 +158,10 @@ class TopicViewSet(viewsets.ModelViewSet):
                 return Response({"error": "Your study program are allowed for this topic"}, status=status.HTTP_403_FORBIDDEN)
 
             user_activities = Activity.objects.filter(supervisees=user)
-            for activity in user_activities:
-                if activity.is_completed is None:
-                    return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
+            if topic.course.course_type == "OO":
+                for activity in user_activities:
+                    if activity.is_completed is None:
+                        return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
             
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
@@ -188,9 +189,10 @@ class TopicViewSet(viewsets.ModelViewSet):
                     return Response({"error": "Your study program are allowed for this topic"}, status=status.HTTP_403_FORBIDDEN)
                 
                 user_activities = Activity.objects.filter(supervisees=user)
-                for activity in user_activities:
-                    if activity.is_completed is None:
-                        return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
+                if course.course_type == "OO":
+                    for activity in user_activities:
+                        if activity.is_completed is None:
+                            return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
                     
                 if serializer.is_valid():
                     topic_request = serializer.save(creator=user)

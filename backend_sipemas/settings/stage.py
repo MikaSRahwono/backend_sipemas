@@ -9,7 +9,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 DEBUG = False
 CORS_ALLOW_ALL_ORIGINS = True
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 STATIC_ROOT = BASE_DIR / 'static'
 STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'

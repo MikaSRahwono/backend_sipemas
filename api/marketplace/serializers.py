@@ -126,9 +126,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
                 raise ValidationError(f"Applicant with ID {applicant.id} does not belong to an allowed organization.")
             
             user_activities = Activity.objects.filter(supervisees=applicant)
-            for activity in user_activities:
-                if activity.is_completed is None:
-                    raise ValidationError(f"Applicant id {applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
+            if topic.course.course_type == 'OO':
+                for activity in user_activities:
+                    if activity.is_completed is None:
+                        raise ValidationError(f"Applicant id {applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
                 
             applicantsInstances.append(applicant)
             
@@ -171,10 +172,11 @@ class TopicRequestSerializer(serializers.ModelSerializer):
                 raise ValidationError(f"Applicant with ID {applicant.id} does not belong to an allowed organization.")
             
             user_activities = Activity.objects.filter(supervisees=applicant)
-            for activity in user_activities:
-                if activity.is_completed is None:
-                    raise ValidationError(f"Applicant id {applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
-                
+            if course.course_type == 'OO':
+                for activity in user_activities:
+                    if activity.is_completed is None:
+                        raise ValidationError(f"Applicant id {applicant.id} already have other running activity in course {activity.topic.course.nm_mk}")
+                    
             applicantsInstances.append(applicant)
 
         topic_request = TopicRequest.objects.create(**validated_data)
