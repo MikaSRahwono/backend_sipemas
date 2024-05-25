@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -49,7 +50,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework.authtoken',
-    'corsheaders'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -61,8 +62,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 ROOT_URLCONF = 'backend_sipemas.urls'
 
 TEMPLATES = [
@@ -81,6 +83,9 @@ TEMPLATES = [
     },
 ]
 
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -96,6 +101,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'EXCEPTION_HANDLER': 'api.exceptions.custom_exception_handler',
 }
 WSGI_APPLICATION = 'backend_sipemas.wsgi.application'
 
@@ -145,6 +151,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
+
+STATIC_URL = '/static/'
 
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
