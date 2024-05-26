@@ -16,4 +16,6 @@ python manage.py seed_groups --settings=backend_sipemas.settings.stage
 
 python manage.py collectstatic --noinput --settings=backend_sipemas.settings.stage
 
+python create_superuser.py
+
 exec gunicorn backend_sipemas.wsgi:application --bind 0.0.0.0:8000 --env DJANGO_SETTINGS_MODULE=backend_sipemas.settings.stage
