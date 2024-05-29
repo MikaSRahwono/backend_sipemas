@@ -25,10 +25,6 @@ class RegisterView(generics.CreateAPIView):
 class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         def create_user_student(sso_data, email, username, password, user):
-
-            print(username)
-            print(password)
-
             prodi  = sso_data['kode_org'].split(":")[0]
             full_name =  sso_data['nama']
             id_code =  sso_data['kodeidentitas']
@@ -175,6 +171,9 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             email = f'{username}@ui.ac.id'
             user = User.objects.create_user(username=username, password=password, email=email)
 
+            print(username)
+            print(password)
+
             print(sso_data)
             if sso_data['nama_role'] == 'mahasiswa':
                 return create_user_student(sso_data, email, username, password, user)
@@ -185,6 +184,9 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
         elif count_users == 1:
             user = authenticate(request, username=username, password=password)
+
+            print(username)
+            print(password)
 
             login(request, user)
 
