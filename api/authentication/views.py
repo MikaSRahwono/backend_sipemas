@@ -170,6 +170,8 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
         if count_users == 0:
             email = f'{username}@ui.ac.id'
             user = User.objects.create_user(username=username, password=password, email=email)
+
+            print(sso_data)
             if sso_data['nama_role'] == 'mahasiswa':
                 return create_user_student(sso_data, email, username, password, user)
             elif sso_data['nama_role'] == 'dosen':
