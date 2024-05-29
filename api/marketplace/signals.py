@@ -24,6 +24,8 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
     def restrict_other_requests(supervisee):
         topic_request_approvals = TopicRequestApproval.objects.filter(approvee=supervisee)
         application_approvals = ApplicationApproval.objects.filter(approvee=supervisee)
+        applications = Application.objects.filter(creator=supervisee)
+        topic_requests = TopicRequest.objects.filter(creator=supervisee)
 
         for approval in topic_request_approvals:
             if (approval.approval_status == 0 or approval.approval_status == 1) and approval.topic_request != topic_request:
@@ -38,6 +40,15 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
                 approval.approval_status = 3
                 approval.save()
                 approval.application.save()
+
+        for topic_request in topic_requests:
+            if topic_request != topic_request_approval.topic_request:
+                topic_request.is_approved = False
+                topic_request.save()
+        
+        for application in applications:
+            application.is_approved = False
+            application.save()
 
 
     topic_request_approval = TopicRequestApproval.objects.get(id=topic_request_approval.id)
@@ -115,6 +126,8 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
     def restrict_other_requests(supervisee):
         topic_request_approvals = TopicRequestApproval.objects.filter(approvee=supervisee)
         application_approvals = ApplicationApproval.objects.filter(approvee=supervisee)
+        applications = Application.objects.filter(creator=supervisee)
+        topic_requests = TopicRequest.objects.filter(creator=supervisee)
 
         for approval in topic_request_approvals:
             if approval.approval_status == 0 or approval.approval_status == 1:
@@ -129,6 +142,15 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
                 approval.approval_status = 3
                 approval.save()
                 approval.application.save()
+
+        for application in applications:
+            if application != application_approvals.application:
+                application.is_approved = False
+                application.save()
+        
+        for topic_request in topic_requests:
+            topic_request.is_approved = False
+            topic_request.save()
 
 
     application_approval = ApplicationApproval.objects.get(id=application_approval.id)
