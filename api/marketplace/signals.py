@@ -152,7 +152,7 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
                 approval.application.save()
 
         for application in applications:
-            if application != application_approvals.application:
+            if application != application_approval.application:
                 application.is_approved = False
                 application.save()
                 self_application_approvals = ApplicationApproval.objects.filter(application=application)
