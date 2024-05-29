@@ -45,7 +45,7 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
             if topic_request != topic_request_approval.topic_request:
                 topic_request.is_approved = False
                 topic_request.save()
-                self_topic_approvals = TopicRequestApproval.objects.get(topic_request=topic_request)
+                self_topic_approvals = TopicRequestApproval.objects.filter(topic_request=topic_request)
                 for approval in self_topic_approvals:
                     approval.approval_status = 3
                     approval.save()
@@ -53,7 +53,7 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         for application in applications:
             application.is_approved = False
             application.save()
-            self_application_approvals = ApplicationApproval.objects.get(application=application)
+            self_application_approvals = ApplicationApproval.objects.filter(application=application)
             for approval in self_application_approvals:
                 approval.approval_status = 3
                 approval.save()
@@ -155,7 +155,7 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
             if application != application_approvals.application:
                 application.is_approved = False
                 application.save()
-                self_application_approvals = ApplicationApproval.objects.get(application=application)
+                self_application_approvals = ApplicationApproval.objects.filter(application=application)
                 for approval in self_application_approvals:
                     approval.approval_status = 3
                     approval.save()
@@ -163,7 +163,7 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         for topic_request in topic_requests:
             topic_request.is_approved = False
             topic_request.save()
-            self_topic_approvals = TopicRequestApproval.objects.get(topic_request=topic_request)
+            self_topic_approvals = TopicRequestApproval.objects.filter(topic_request=topic_request)
             for approval in self_topic_approvals:
                 approval.approval_status = 3
                 approval.save()
