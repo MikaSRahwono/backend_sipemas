@@ -268,7 +268,6 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
 class ManagerDashboardViewSet(viewsets.GenericViewSet):
     serializer_class = ActivitySerializer
     model = Activity
-    permission_classes = [IsManager]
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
