@@ -174,14 +174,14 @@ class SecretaryDashboardViewSet(viewsets.GenericViewSet):
 class LecturerDashboardViewSet(viewsets.GenericViewSet):
     serializer_class = ActivitySerializer
     model = Activity
-    permission_classes = (IsLecturer, IsAuthenticated,)
+    permission_classes = ()
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
 
     def get_permissions(self):
         if self.action in ['students', 'student_profile']:
-            return [IsManager(), IsLecturer(), IsSecretary()]
+            return []
         return []
 
     @action(detail=False, methods=['GET'], url_path='overview')
