@@ -125,12 +125,27 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 'full_name': full_name,
                 'id_code': id_code
             }
+
+            user_profile = {
+                'about': '',
+                'line_id': '',
+                'linkedin_url': '',
+                'github_url': '',
+                'instagram_url': '',
+                'website_url': '',
+                'is_open': True,
+                'github_url': '',
+            }
+
             serializer = UserDetailSerializer(data=user_detail)
+            profile_serializer = UserProfileSerializer(data=user_profile)
+
             if serializer.is_valid():
                 group = Group.objects.get(name='Secretary')
 
                 user.groups.add(group)
                 serializer.save(user=user)
+                profile_serializer.save(user=user)
 
                 serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
                 serializer.is_valid(raise_exception=True)
