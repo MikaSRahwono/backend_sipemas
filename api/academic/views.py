@@ -114,7 +114,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 try:
                     activity_steps = ActivityStep.objects.filter(course=course).order_by('index')
                     serializer = ActivityStepSerializer(activity_steps, many=True)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
                 except CourseInformation.DoesNotExist:
                     return Response({"error": "CourseInformation not found"}, status=status.HTTP_404_NOT_FOUND)
             
@@ -144,7 +144,7 @@ class FieldViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         super().destroy(self)
-        return Response({'msg': 'Success delete field'}, status=status.HTTP_201_CREATED)
+        return Response({'msg': 'Success delete field'}, status=status.HTTP_200_OK)
 
 class ActivityStepViewSet(viewsets.ModelViewSet):
     queryset = ActivityStep.objects.all()

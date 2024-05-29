@@ -86,7 +86,6 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         activity.save()
 
         if topic_request.course.course_type == 'OO':
-            restrict_other_requests(user)
             for supervisee in activity.supervisees.all():
                 restrict_other_requests(supervisee)
 
@@ -159,7 +158,6 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         activity.supervisors.add(*application.topic.supervisors.all())
 
         if application.topic.course.course_type == 'OO':
-            restrict_other_requests(user)
             for supervisee in activity.supervisees.all():
                 restrict_other_requests(supervisee)
 
