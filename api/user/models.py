@@ -47,7 +47,7 @@ class UserDetail(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE,  related_name='user_profile')
     about = models.TextField(blank=True)
-    profile_image = models.ImageField(upload_to='profile_imgs/', null=True, blank=True, storage=ImageStorage())
+    profile_image = models.ImageField(upload_to='profile_imgs/', null=True, blank=True, storage=ImageStorage(), max_length=5000)
     line_id = models.CharField(max_length=256, blank=True)
     linkedin_url = models.CharField(max_length=256, blank=True)
     github_url = models.CharField(max_length=256, blank=True)

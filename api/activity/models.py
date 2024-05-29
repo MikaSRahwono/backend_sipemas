@@ -31,7 +31,7 @@ class FileSubmission(models.Model):
     assignment_component = models.ForeignKey(AssignmentComponent, on_delete=models.DO_NOTHING, related_name='filesubmissionassignments')
     subject = models.CharField(max_length=256, blank=True, null=True)
     body = models.TextField(blank=True, null=True)
-    file = models.FileField(upload_to='assignments/', null=False, blank=False, storage=FileStorage(), max_length=1000)
+    file = models.FileField(upload_to='assignments/', null=False, blank=False, storage=FileStorage(), max_length=500000)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     deleted_on = models.DateTimeField(blank=True, auto_now=False, null=True)
