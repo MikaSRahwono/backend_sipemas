@@ -17,7 +17,7 @@ from api.dashboard.models import Note
 from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer, UserGroupsSerializer
 from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequestApproval
 from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
-from api.permissions import IsManager, IsLecturer, IsSecretary
+from api.permissions import IsManager, IsLecturer, IsNotStudent, IsSecretary, IsSecretaryAndLecturer, IsSecretaryAndManager
 from api.user.serializers import UserSerializer
 from api.user.models import Organization, User
 
@@ -26,7 +26,7 @@ from api.user.models import Organization, User
 class SecretaryDashboardViewSet(viewsets.GenericViewSet):
     serializer_class = ActivitySerializer
     model = Activity
-    permission_classes = (IsSecretary, IsAuthenticated,)
+    permission_classes = (IsSecretaryAndManager, IsAuthenticated,)
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
@@ -177,11 +177,7 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
-
-    def get_permissions(self):
-        if self.action in ['students', 'student_profile']:
-            return []
-        return []
+    permission_classes = (IsNotStudent, IsAuthenticated,)
 
     @action(detail=False, methods=['GET'], url_path='overview')
     def overview(self, request, pk=None):
@@ -271,6 +267,12 @@ class ManagerDashboardViewSet(viewsets.GenericViewSet):
     queryset = Activity.objects.all()  
     pagination_class = None 
     filterset_class = ActivityFilter
+
+    def get_permissions(self):
+        if self.action in ['lecturer']:
+            return [IsNotStudent()]
+        return [IsManager()]
+
 
     @action(detail=False, methods=['GET'], url_path='overview')
     def overview(self, request, pk=None):

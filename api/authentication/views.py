@@ -101,7 +101,7 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 group = Group.objects.get(name='Lecturer')
 
                 user.groups.add(group)
-                detail_serializer.save(user=user)
+                detail_serializer.save(user=user, organization=None)
                 profile_serializer.save(user=user)
 
                 serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
@@ -144,7 +144,7 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 group = Group.objects.get(name='Secretary')
 
                 user.groups.add(group)
-                serializer.save(user=user)
+                serializer.save(user=user, organization=None)
                 profile_serializer.save(user=user)
 
                 serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})

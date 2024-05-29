@@ -52,6 +52,26 @@ class IsSecretary(BasePermission):
         if request.user.is_authenticated:
             return request.user.groups.filter(name='Secretary').exists()
         return False
+        
+class IsSecretaryAndManager(BasePermission):
+    """
+    Custom permission to only allow access to secretary.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return request.user.groups.filter(name='Manager').exists() or  request.user.groups.filter(name='Secretary').exists()
+        return False
+    
+class IsNotStudent(BasePermission):
+    """
+    Custom permission to only allow access to secretary.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return not request.user.groups.filter(name='Student').exists()
+        return False
     
 class IsInAllowedOrganizationsTopic(BasePermission):
     def has_object_permission(self, request, view, obj):
