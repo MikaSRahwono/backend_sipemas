@@ -17,7 +17,7 @@ from api.dashboard.models import Note
 from api.dashboard.serializers import LecturerDataSerializer, NoteSerializer, StudentActivitySerializer, StudentDataSerializer, UserGroupsSerializer
 from api.marketplace.models import Application, ApplicationApproval, Topic, TopicRequestApproval
 from api.marketplace.serializers import ApplicationApprovalSerializer, TopicListSerializer, TopicRequestApprovalSerializer
-from api.permissions import IsManager, IsLecturer, IsNotStudent, IsSecretary, IsSecretaryAndLecturer, IsSecretaryAndManager
+from api.permissions import IsManager, IsLecturer, IsNotStudent, IsSecretary, IsSecretaryAndManager
 from api.user.serializers import UserSerializer
 from api.user.models import Organization, User
 
