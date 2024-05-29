@@ -25,6 +25,10 @@ class RegisterView(generics.CreateAPIView):
 class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
     def create(self, request, *args, **kwargs):
         def create_user_student(sso_data, email, username, password, user):
+
+            print(username)
+            print(password)
+
             prodi  = sso_data['kode_org'].split(":")[0]
             full_name =  sso_data['nama']
             id_code =  sso_data['kodeidentitas']
