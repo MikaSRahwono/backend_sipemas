@@ -179,6 +179,11 @@ class LecturerDashboardViewSet(viewsets.GenericViewSet):
     pagination_class = None 
     filterset_class = ActivityFilter
 
+    def get_permissions(self):
+        if self.action in ['students', 'student_profile']:
+            return [IsManager(), IsLecturer(), IsSecretary()]
+        return []
+
     @action(detail=False, methods=['GET'], url_path='overview')
     def overview(self, request, pk=None):
         try:

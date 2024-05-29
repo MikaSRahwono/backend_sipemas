@@ -52,6 +52,10 @@ class CourseViewSet(viewsets.ModelViewSet):
                 return Response({"error": "Error occurred while creating the course"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(self)
+        return Response({'msg': 'Success delete course'}, status=status.HTTP_201_CREATED)
+
     def update(self, request, *args, **kwargs):
         course = self.get_object()
 
@@ -137,6 +141,10 @@ class FieldViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(self)
+        return Response({'msg': 'Success delete field'}, status=status.HTTP_201_CREATED)
 
 class ActivityStepViewSet(viewsets.ModelViewSet):
     queryset = ActivityStep.objects.all()
