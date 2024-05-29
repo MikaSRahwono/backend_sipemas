@@ -144,7 +144,7 @@ class LoginSSOViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
             serializer = UserDetailSerializer(data=user_detail)
             profile_serializer = UserProfileSerializer(data=user_profile)
 
-            if serializer.is_valid():
+            if serializer.is_valid() & profile_serializer.is_valid():
                 group = Group.objects.get(name='Secretary')
 
                 user.groups.add(group)
