@@ -41,22 +41,22 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
                 approval.save()
                 approval.application.save()
 
-        for topic_request in topic_requests:
-            if topic_request != topic_request_approval.topic_request:
-                topic_request.is_approved = False
-                topic_request.save()
-                self_topic_approvals = TopicRequestApproval.objects.filter(topic_request=topic_request)
-                for approval in self_topic_approvals:
-                    approval.approval_status = 3
-                    approval.save()
+        for this_topic_request in topic_requests:
+            if this_topic_request != topic_request_approval.topic_request:
+                this_topic_request.is_approved = False
+                this_topic_request.save()
+                self_topic_approvals = TopicRequestApproval.objects.filter(topic_request=this_topic_request)
+                for this_approval in self_topic_approvals:
+                    this_approval.approval_status = 3
+                    this_approval.save()
         
-        for application in applications:
-            application.is_approved = False
-            application.save()
-            self_application_approvals = ApplicationApproval.objects.filter(application=application)
-            for approval in self_application_approvals:
-                approval.approval_status = 3
-                approval.save()
+        for this_application in applications:
+            this_application.is_approved = False
+            this_application.save()
+            self_application_approvals = ApplicationApproval.objects.filter(application=this_application)
+            for this_approval in self_application_approvals:
+                this_approval.approval_status = 3
+                this_approval.save()
 
 
     topic_request_approval = TopicRequestApproval.objects.get(id=topic_request_approval.id)
@@ -151,23 +151,22 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
                 approval.save()
                 approval.application.save()
 
-        for application in applications:
-            if application != application_approval.application:
-                application.is_approved = False
-                application.save()
-                self_application_approvals = ApplicationApproval.objects.filter(application=application)
-                for approval in self_application_approvals:
-                    approval.approval_status = 3
-                    approval.save()
+        for this_application in applications:
+            if this_application != application_approval.application:
+                this_application.is_approved = False
+                this_application.save()
+                self_application_approvals = ApplicationApproval.objects.filter(application=this_application)
+                for this_approval in self_application_approvals:
+                    this_approval.approval_status = 3
+                    this_approval.save()
         
-        for topic_request in topic_requests:
-            topic_request.is_approved = False
-            topic_request.save()
-            self_topic_approvals = TopicRequestApproval.objects.filter(topic_request=topic_request)
-            for approval in self_topic_approvals:
-                approval.approval_status = 3
-                approval.save()
-
+        for this_topic_request in topic_requests:
+            this_topic_request.is_approved = False
+            this_topic_request.save()
+            self_topic_approvals = TopicRequestApproval.objects.filter(topic_request=this_topic_request)
+            for this_approval in self_topic_approvals:
+                this_approval.approval_status = 3
+                this_approval.save()
 
     application_approval = ApplicationApproval.objects.get(id=application_approval.id)
     application_approval.approval_status = 1
