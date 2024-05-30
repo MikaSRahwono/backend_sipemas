@@ -168,6 +168,15 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
                 this_approval.approval_status = 3
                 this_approval.save()
 
+    def reject_other_applications():
+        topic_application_approvals = ApplicationApproval.objects.filter(application=application_approval.application)
+        for app_approval in topic_application_approvals:
+            if app_approval != application_approval:
+                app_approval.approval_status = -1
+                app_approval.application.is_approved = False
+                app_approval.save()
+                app_approval.application.save()
+
     application_approval = ApplicationApproval.objects.get(id=application_approval.id)
     application_approval.approval_status = 1
     application_approval.save()
@@ -203,6 +212,8 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
         for approval in application_application_approvals:
             approval.approval_status = 2
             approval.save()
+
+        reject_other_applications()
         
         activity.save()
 
