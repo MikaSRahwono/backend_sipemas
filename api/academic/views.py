@@ -22,7 +22,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'destroy']:
             return [IsManager()]
-        if self.action in ['information']:
+        if self.action in ['information', 'activity_steps']:
             if self.request.method == 'GET':
                 return []
             else:
@@ -105,7 +105,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
         
-    @action(detail=True, methods=['GET'], url_path='activity_steps', permission_classes = [IsAuthenticated])
+    @action(detail=True, methods=['GET', 'DELETE'], url_path='activity_steps', permission_classes = [IsAuthenticated])
     def activity_steps(self, request, pk=None):
         try:
             course = self.get_object()
@@ -117,6 +117,15 @@ class CourseViewSet(viewsets.ModelViewSet):
                     return Response(serializer.data, status=status.HTTP_200_OK)
                 except CourseInformation.DoesNotExist:
                     return Response({"error": "CourseInformation not found"}, status=status.HTTP_404_NOT_FOUND)
+                
+            if request.method == 'DELETE':
+                try:
+                    activity_steps = ActivityStep.objects.filter(course=course).order_by('index')
+                    for step in activity_steps:
+                        step.delete()
+                    return Response({"success": "Activity Steps deleted"}, status=status.HTTP_200_OK)
+                except ActivityStep.DoesNotExist:
+                    return Response({"error": "ActivityStep not found"}, status=status.HTTP_404_NOT_FOUND)
             
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
