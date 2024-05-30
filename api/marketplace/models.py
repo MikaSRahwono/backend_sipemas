@@ -9,7 +9,7 @@ from ..academic.models import Course
 class Topic(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     title = models.CharField(max_length=256)
-    is_open = models.BooleanField(default=True)
+    is_open = models.BooleanField(default=True, null=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='topic_creator')
     num_of_people = models.IntegerField()
     created_on = models.DateTimeField(auto_now_add=True)

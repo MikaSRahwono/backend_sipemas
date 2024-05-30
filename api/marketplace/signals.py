@@ -21,6 +21,7 @@ topic_request_approved_signal = Signal()
 @receiver(topic_request_approved_signal)
 def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs):
     
+    # A function to reject all supervisee application_approvals and topic_request_approvals
     def restrict_other_requests(supervisee):
         topic_request_approvals = TopicRequestApproval.objects.filter(approvee=supervisee)
         application_approvals = ApplicationApproval.objects.filter(approvee=supervisee)
@@ -58,7 +59,6 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
                 this_approval.approval_status = 3
                 this_approval.save()
 
-
     topic_request_approval = TopicRequestApproval.objects.get(id=topic_request_approval.id)
     topic_request_approval.approval_status = 1
     topic_request_approval.save()
@@ -79,7 +79,7 @@ def handle_topic_request_approved(sender, topic_request_approval, user, **kwargs
         topic = Topic.objects.create(
             course = topic_request.course,
             title = topic_request.title,
-            is_open = False,
+            is_open = None,
             num_of_people = topic_request.num_of_people,
             created_on = topic_request.created_on,
             creator = topic_request.creator
@@ -131,6 +131,7 @@ application_approved_signal = Signal()
 @receiver(application_approved_signal)
 def handle_application_approved(sender, application_approval, user, **kwargs):
     
+    # A function to reject all supervisee application_approvals and topic_request_approvals
     def restrict_other_requests(supervisee):
         topic_request_approvals = TopicRequestApproval.objects.filter(approvee=supervisee)
         application_approvals = ApplicationApproval.objects.filter(approvee=supervisee)
@@ -168,6 +169,7 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
                 this_approval.approval_status = 3
                 this_approval.save()
 
+    # A function to reject all application for that topic
     def reject_other_applications():
         topic_application_approvals = ApplicationApproval.objects.filter(application=application_approval.application)
         for app_approval in topic_application_approvals:
@@ -197,6 +199,9 @@ def handle_application_approved(sender, application_approval, user, **kwargs):
             course = application.topic.course,
             application=application
         )
+
+        application.topic.is_open = None
+        application.topic.save()
         
         activity.supervisees.add(application.creator)
         if application.applicants:

@@ -162,6 +162,9 @@ class TopicViewSet(viewsets.ModelViewSet):
                 for activity in user_activities:
                     if activity.is_completed is None:
                         return Response({'error': f"You already have other running activity in course {activity.topic.course.nm_mk}"}, status=status.HTTP_403_FORBIDDEN)
+                    
+            if topic.is_open is None or topic.is_open is False:
+                return Response({'error': f"This topic is closed"}, status=status.HTTP_403_FORBIDDEN)
             
             serializer = ApplicationSerializer(data=request.data, context={'request': request, 'topic': topic})
             if serializer.is_valid():
