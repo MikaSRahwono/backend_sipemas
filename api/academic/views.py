@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 
-from api.permissions import IsManager, IsSecretary
+from api.permissions import IsManager, IsSecretary, IsSecretaryAndManager
 
 from .models import *
 from .serializers import *
@@ -159,7 +159,13 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
     queryset = ActivityStep.objects.all()
     serializer_class = ActivityStepSerializer
 
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_information', permission_classes=[IsSecretary])
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        else:
+            return [IsManager()]
+
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_information', permission_classes=[IsAuthenticated])
     def step_information(self, request, pk=None):
         activity_step = ActivityStep.objects.get(pk = pk)
 
@@ -194,7 +200,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except StepInformation.DoesNotExist:
                 return Response({'error': 'Step Information does not exist'}, status=status.HTTP_404_NOT_FOUND)
             
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_assignment', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_assignment', permission_classes=[IsAuthenticated])
     def step_assignment(self, request, pk=None):
         activity_step = ActivityStep.objects.get(pk = pk)
 
@@ -229,7 +235,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except StepAssignment.DoesNotExist:
                 return Response({'error': 'Step Assignment does not exist'}, status=status.HTTP_404_NOT_FOUND)
             
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_sidang', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_sidang', permission_classes=[IsAuthenticated])
     def step_sidang(self, request, pk=None):
         activity_step = ActivityStep.objects.get(pk = pk)
 
@@ -264,7 +270,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except StepSidang.DoesNotExist:
                 return Response({'error': 'Step Sidang does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
-    @action(detail=True, methods=['GET', 'POST', 'PUT', 'DELETE'], url_path='step_components', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['GET', 'POST', 'PUT', 'DELETE'], url_path='step_components', permission_classes=[IsAuthenticated])
     def step_components(self, request, pk=None):
         activity_step = ActivityStep.objects.get(pk = pk)
 
@@ -288,7 +294,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except StepComponent.DoesNotExist:
                 return Response({'error': 'Step Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=True, methods=['DELETE'], url_path='step_components/(?P<index>\d+)', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['DELETE'], url_path='step_components/(?P<index>\d+)', permission_classes=[IsAuthenticated])
     def manage_step_component(self, request, pk=None, index=None):
         activity_step = ActivityStep.objects.get(pk = pk)
 
@@ -300,7 +306,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except StepComponent.DoesNotExist:
                 return Response({'error': 'Step Assignment Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/announcement_components', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/announcement_components', permission_classes=[IsAuthenticated])
     def announcement_component(self, request, pk=None, index=None):
         activity_step = ActivityStep.objects.get(pk = pk)
         step_component = StepComponent.objects.get(activity_step = activity_step, index=index)
@@ -336,7 +342,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except AnnouncementComponent.DoesNotExist:
                 return Response({'error': 'Announcement Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
             
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/information_components', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/information_components', permission_classes=[IsAuthenticated])
     def information_component(self, request, pk=None, index=None):
         activity_step = ActivityStep.objects.get(pk = pk)
         step_component = StepComponent.objects.get(activity_step = activity_step, index=index)
@@ -372,7 +378,7 @@ class ActivityStepViewSet(viewsets.ModelViewSet):
             except InformationComponent.DoesNotExist:
                 return Response({'error': 'Information Component does not exist'}, status=status.HTTP_404_NOT_FOUND)
             
-    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/assignment_components', permission_classes=[IsSecretary])
+    @action(detail=True, methods=['GET', 'POST', 'PUT'], url_path='step_components/(?P<index>\d+)/assignment_components', permission_classes=[IsAuthenticated])
     def assignment_component(self, request, pk=None, index=None):
         activity_step = ActivityStep.objects.get(pk = pk)
         step_component = StepComponent.objects.get(activity_step = activity_step, index=index)
